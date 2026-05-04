@@ -1,0 +1,298 @@
+{
+  "importResult": {
+    "comments": [
+      {
+        "author": {
+          "color": "#6EE7B7",
+          "displayName": "Livie",
+          "id": null
+        },
+        "badges": [],
+        "body": {
+          "text": "Welcome back to the archive."
+        },
+        "emotes": [],
+        "id": "c1",
+        "importOrder": 0,
+        "kind": "message",
+        "originalTimestamp": {
+          "basis": "relative_to_video_start",
+          "value": "1000"
+        },
+        "platform": null,
+        "rawRef": {
+          "pointer": null,
+          "row": 1
+        },
+        "source": {
+          "path": "fixtures/comments/basic_en.json",
+          "row": 1
+        },
+        "sourceId": "main",
+        "style": null,
+        "timestampMs": 1000
+      },
+      {
+        "author": {
+          "color": null,
+          "displayName": "Mika",
+          "id": null
+        },
+        "badges": [],
+        "body": {
+          "text": "The timing looks right."
+        },
+        "emotes": [],
+        "id": "c2",
+        "importOrder": 1,
+        "kind": "message",
+        "originalTimestamp": {
+          "basis": "relative_to_video_start",
+          "value": "00:05"
+        },
+        "platform": null,
+        "rawRef": {
+          "pointer": null,
+          "row": 2
+        },
+        "source": {
+          "path": "fixtures/comments/basic_en.json",
+          "row": 2
+        },
+        "sourceId": "main",
+        "style": null,
+        "timestampMs": 5000
+      },
+      {
+        "author": {
+          "color": null,
+          "displayName": "Ada",
+          "id": null
+        },
+        "badges": [],
+        "body": {
+          "text": "This should wrap inside the sidebar without changing the source video region."
+        },
+        "emotes": [],
+        "id": "c3",
+        "importOrder": 2,
+        "kind": "message",
+        "originalTimestamp": {
+          "basis": "relative_to_video_start",
+          "value": "00:12.5"
+        },
+        "platform": null,
+        "rawRef": {
+          "pointer": null,
+          "row": 3
+        },
+        "source": {
+          "path": "fixtures/comments/basic_en.json",
+          "row": 3
+        },
+        "sourceId": "main",
+        "style": null,
+        "timestampMs": 12500
+      }
+    ],
+    "detectedEncoding": "utf-8",
+    "detectedFormat": "canonical_json_v1",
+    "diagnostics": [],
+    "importerVersion": "1.0.0",
+    "skippedCount": 0,
+    "source": {
+      "diagnosticsRef": null,
+      "displayName": "Main Chat",
+      "enabled": true,
+      "importFingerprint": {
+        "algorithm": "sha256",
+        "value": "518aa3be48c7b222fa68f9496dea07978d574971f7a5b9c55a51a0ca6cd904cb"
+      },
+      "importerId": "canonical-json",
+      "metadata": {},
+      "offsetMs": 0,
+      "originalFileRef": {
+        "hash": "518aa3be48c7b222fa68f9496dea07978d574971f7a5b9c55a51a0ca6cd904cb",
+        "path": "fixtures/comments/basic_en.json"
+      },
+      "platform": "youtube",
+      "sourceId": "main",
+      "timestampBasis": "relative_to_video_start",
+      "visualStyle": null
+    }
+  },
+  "renderPlan": {
+    "audioPolicy": "attempt_passthrough_then_aac",
+    "canvas": {
+      "fps": 30.0,
+      "height": 720,
+      "width": 1760
+    },
+    "comments": [
+      {
+        "author": {
+          "color": "#6EE7B7",
+          "displayName": "Livie",
+          "id": null
+        },
+        "badges": [],
+        "body": {
+          "text": "Welcome back to the archive."
+        },
+        "emotes": [],
+        "id": "c1",
+        "importOrder": 0,
+        "kind": "message",
+        "originalTimestamp": {
+          "basis": "relative_to_video_start",
+          "value": "1000"
+        },
+        "platform": null,
+        "rawRef": {
+          "pointer": null,
+          "row": 1
+        },
+        "source": {
+          "path": "fixtures/comments/basic_en.json",
+          "row": 1
+        },
+        "sourceId": "main",
+        "style": null,
+        "timestampMs": 1000
+      },
+      {
+        "author": {
+          "color": null,
+          "displayName": "Mika",
+          "id": null
+        },
+        "badges": [],
+        "body": {
+          "text": "The timing looks right."
+        },
+        "emotes": [],
+        "id": "c2",
+        "importOrder": 1,
+        "kind": "message",
+        "originalTimestamp": {
+          "basis": "relative_to_video_start",
+          "value": "00:05"
+        },
+        "platform": null,
+        "rawRef": {
+          "pointer": null,
+          "row": 2
+        },
+        "source": {
+          "path": "fixtures/comments/basic_en.json",
+          "row": 2
+        },
+        "sourceId": "main",
+        "style": null,
+        "timestampMs": 5000
+      },
+      {
+        "author": {
+          "color": null,
+          "displayName": "Ada",
+          "id": null
+        },
+        "badges": [],
+        "body": {
+          "text": "This should wrap inside the sidebar without changing the source video region."
+        },
+        "emotes": [],
+        "id": "c3",
+        "importOrder": 2,
+        "kind": "message",
+        "originalTimestamp": {
+          "basis": "relative_to_video_start",
+          "value": "00:12.5"
+        },
+        "platform": null,
+        "rawRef": {
+          "pointer": null,
+          "row": 3
+        },
+        "source": {
+          "path": "fixtures/comments/basic_en.json",
+          "row": 3
+        },
+        "sourceId": "main",
+        "style": null,
+        "timestampMs": 12500
+      }
+    ],
+    "emojiPolicyId": "placeholder-diagnostic-v1",
+    "fontPolicyId": "system-default-v1",
+    "mediaBackend": "ffmpeg_assisted",
+    "ordering": {
+      "tieBreakers": [
+        "effective_timestamp_ms",
+        "event_priority",
+        "source_priority",
+        "import_order",
+        "stable_id"
+      ]
+    },
+    "overlayRendererId": "rust-cpu-overlay",
+    "regions": {
+      "comments": {
+        "height": 720,
+        "width": 480,
+        "x": 1280,
+        "y": 0
+      },
+      "sourceVideo": {
+        "height": 720,
+        "width": 1280,
+        "x": 0,
+        "y": 0
+      }
+    },
+    "schemaVersion": "1.0",
+    "style": {
+      "authorColors": [
+        "#6EE7B7",
+        "#93C5FD",
+        "#FCA5A5",
+        "#FCD34D"
+      ],
+      "fontSize": 18.0,
+      "panelBackground": "#151719E6",
+      "rowPadding": 12,
+      "rowSeparator": "#2D333A99",
+      "textPrimary": "#F5F7FA",
+      "textSecondary": "#9BA6B2"
+    },
+    "timeline": {
+      "commentWindow": {
+        "durationMs": 30000
+      },
+      "globalOffsetMs": 0,
+      "maxVisibleComments": 18,
+      "sources": [
+        {
+          "diagnosticsRef": null,
+          "displayName": "Main Chat",
+          "enabled": true,
+          "importFingerprint": {
+            "algorithm": "sha256",
+            "value": "518aa3be48c7b222fa68f9496dea07978d574971f7a5b9c55a51a0ca6cd904cb"
+          },
+          "importerId": "canonical-json",
+          "metadata": {},
+          "offsetMs": 0,
+          "originalFileRef": {
+            "hash": "518aa3be48c7b222fa68f9496dea07978d574971f7a5b9c55a51a0ca6cd904cb",
+            "path": "fixtures/comments/basic_en.json"
+          },
+          "platform": "youtube",
+          "sourceId": "main",
+          "timestampBasis": "relative_to_video_start",
+          "visualStyle": null
+        }
+      ]
+    }
+  }
+}

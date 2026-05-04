@@ -1,0 +1,21 @@
+{
+  "source": {
+    "sourceId": "main",
+    "displayName": "CJK Mixed",
+    "platform": "youtube"
+  },
+  "comments": [
+    {
+      "id": "jp1",
+      "timestampMs": 1000,
+      "author": { "displayName": "あおい" },
+      "body": { "text": "こんにちは、アーカイブのコメント再生テストです。" }
+    },
+    {
+      "id": "jp2",
+      "timestampMs": 2500,
+      "author": { "displayName": "Kai" },
+      "body": { "text": "Mixed English と日本語 should wrap deterministically." }
+    }
+  ]
+}

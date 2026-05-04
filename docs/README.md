@@ -1,7 +1,7 @@
 # Native Livestream Archive Replay Composer — Documentation Set v2
 
 **Date:** 2026-05-04  
-**Status:** Revised planning set before implementation  
+**Status:** Revised planning set plus v1.0 bootstrap implementation  
 **Source:** Refactored from the original full proposal and the subsequent scope review.
 
 ## Purpose
@@ -32,6 +32,9 @@ The major architectural commitment remains unchanged:
 | `09_testing_validation_matrix.md` | Test matrix for core, renderer, media, UI, integration, and release gates. |
 | `10_risks_and_gates.md` | Risk register, mitigations, and phase gates. |
 | `11_backlog_v1x_future.md` | Post-v1.0 roadmap and intentionally deferred work. |
+| `canonical_json_v1.md` | Implemented canonical JSON v1 input format guide. |
+| `v1_0_quickstart.md` | Developer quickstart for the current CLI/render harness. |
+| `v1_0_release_notes.md` | Draft release notes and current implementation limitations. |
 | `native_livestream_docs_v2_combined.md` | Combined single-file version of the full set. |
 
 ## Recommended Reading Order
@@ -45,4 +48,5 @@ The major architectural commitment remains unchanged:
 
 ## Working Assumption
 
-This set assumes implementation has not started. Therefore it treats architectural reset, scope separation, and idealized rebuilding as available options.
+Implementation has started from the Phase 0 vertical slice. `PLANS.md` is the
+active ledger for remaining gates and blockers.

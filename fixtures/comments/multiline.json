@@ -1,0 +1,15 @@
+{
+  "source": {
+    "sourceId": "main",
+    "displayName": "Multiline",
+    "platform": "youtube"
+  },
+  "comments": [
+    {
+      "id": "multi1",
+      "timestampMs": 1000,
+      "author": { "displayName": "Archivist" },
+      "body": { "text": "First line\nSecond line\nThird line" }
+    }
+  ]
+}

@@ -1,0 +1,26 @@
+name: CI
+
+on:
+  push:
+    branches: [develop, main]
+  pull_request:
+
+jobs:
+  nix:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: DeterminateSystems/nix-installer-action@v16
+      - uses: DeterminateSystems/magic-nix-cache-action@v9
+      - name: Doctor
+        run: nix run .#doctor
+      - name: Format
+        run: nix run .#format -- --ci
+      - name: Rust fmt
+        run: nix develop -c cargo fmt --all -- --check
+      - name: Clippy
+        run: nix develop -c cargo clippy --workspace --all-targets -- -D warnings
+      - name: Tests
+        run: nix develop -c cargo nextest run
+      - name: SwiftPM macOS build
+        run: swift build --package-path apps/macos

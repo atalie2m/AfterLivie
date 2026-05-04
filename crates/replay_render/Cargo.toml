@@ -1,0 +1,17 @@
+[package]
+name = "replay_render"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+chrono.workspace = true
+replay_core.workspace = true
+replay_media.workspace = true
+replay_overlay.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tempfile.workspace = true
+uuid.workspace = true

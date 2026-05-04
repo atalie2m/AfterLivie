@@ -1,0 +1,43 @@
+[workspace]
+resolver = "2"
+members = [
+  "crates/replay_bridge",
+  "crates/replay_cli",
+  "crates/replay_core",
+  "crates/replay_importers",
+  "crates/replay_media",
+  "crates/replay_overlay",
+  "crates/replay_render",
+  "crates/replay_storage",
+]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+repository = "https://github.com/atalie2m/AfterLivie"
+
+[workspace.dependencies]
+anyhow = "1.0"
+chrono = { version = "0.4", features = ["serde", "clock"] }
+clap = { version = "4.5", features = ["derive"] }
+fontdue = "0.9"
+hex = "0.4"
+png = "0.17"
+rusqlite = { version = "0.32", features = ["bundled"] }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+sha2 = "0.10"
+tempfile = "3.13"
+thiserror = "1.0"
+tiny-skia = "0.11"
+unicode-linebreak = "0.1"
+unicode-segmentation = "1.12"
+uuid = { version = "1.10", features = ["v4", "serde"] }
+
+replay_core = { path = "crates/replay_core" }
+replay_importers = { path = "crates/replay_importers" }
+replay_media = { path = "crates/replay_media" }
+replay_overlay = { path = "crates/replay_overlay" }
+replay_render = { path = "crates/replay_render" }
+replay_storage = { path = "crates/replay_storage" }

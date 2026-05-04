@@ -1,0 +1,11 @@
+{
+  "source": {
+    "sourceId": "main",
+    "displayName": "Outside Duration",
+    "platform": "youtube"
+  },
+  "comments": [
+    { "id": "before", "timestampMs": 0, "body": "at start" },
+    { "id": "after", "timestampMs": 9999999, "body": "outside most fixture durations" }
+  ]
+}

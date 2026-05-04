@@ -15,5 +15,8 @@ Files:
 - 09_testing_validation_matrix.md
 - 10_risks_and_gates.md
 - 11_backlog_v1x_future.md
+- canonical_json_v1.md
 - README.md
 - native_livestream_docs_v2_combined.md
+- v1_0_quickstart.md
+- v1_0_release_notes.md

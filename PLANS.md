@@ -44,6 +44,19 @@ The path is:
 - Do not promise mathematically lossless output. Promise visible quality controls, diagnostics, reproducibility inputs, and source-preserving layout decisions where feasible.
 - Treat Phase 0 as a hard technical gate, not a demo.
 
+## Current Implementation Status
+
+2026-05-04:
+
+- `[~]` Repository bootstrap is in place with a Nix flake dev shell, Rust workspace manifest, `justfile`, CI skeleton, SwiftPM macOS app shell, Codex Run action, fixtures, and v1.0 starter docs.
+- `[~]` Phase 0 vertical-slice code exists across Rust crates for core models, canonical JSON import, render-plan generation, CPU overlay PNG/RGBA rendering, ffprobe normalization, project package/SQLite storage, FFmpeg-assisted export, C ABI bridge, and CLI harness.
+- `[~]` macOS product shell exists as a SwiftPM `DocumentGroup` app with import, preview, export, diagnostics, settings, and CLI-backed service surfaces.
+- `[x]` Nix was found at `/nix/var/nix/profiles/default/bin/nix`; `flake.lock` and `Cargo.lock` were generated.
+- `[x]` `nix run .#doctor`, `nix run .#format -- --ci`, `cargo fmt --all -- --check`, `cargo clippy --workspace --all-targets -- -D warnings`, and `cargo nextest run` pass under Nix. Nextest reports 24 passed tests, with one non-failing leaky-process note from the overlay test binary to investigate during hardening.
+- `[x]` The first render-plan fixture, semantic consistency report, and overlay PNG were generated from `fixtures/comments/basic_en.json`.
+- `[x]` A synthetic temporary H.264/AAC MP4 was generated, probed as Apple-native-compatible, and exported through the FFmpeg-assisted preview path to `/tmp/afterlivie-preview.mp4` at 1760x720 with AAC audio.
+- `[!]` The Apple-native AVFoundation/VideoToolbox render path, production typography stack commitment, bundled/license-reviewed media strategy, golden baselines, sample media corpus, and release hardening gates remain open before v1.0 can be considered complete.
+
 ## Non-Negotiable Invariants
 
 - Normalized comments are immutable after import.
