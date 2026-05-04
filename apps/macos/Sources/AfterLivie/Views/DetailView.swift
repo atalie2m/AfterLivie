@@ -39,7 +39,11 @@ struct DetailView: View {
                 action: renderExport
             )
         case .diagnostics:
-            DiagnosticsView(diagnostics: appModel.diagnostics + document.project.diagnostics)
+            DiagnosticsView(
+                project: $document.project,
+                diagnostics: appModel.diagnostics + document.project.diagnostics,
+                refreshTimeline: refreshMergedTimeline
+            )
         }
     }
 
@@ -63,33 +67,52 @@ struct DetailView: View {
 
     private func renderPreview() {
         guard let video = document.project.sourceVideoPath,
-              let comments = document.project.commentSourcePath else {
+              !document.project.commentSources.isEmpty else {
             document.project.diagnostics.append(DiagnosticItem(
                 severity: "error",
                 category: "project",
                 code: "ui.missing_inputs",
-                message: "Select a video and canonical JSON file before rendering."
+                message: "Select a video and at least one comment source before rendering."
             ))
             return
         }
         let output = NSTemporaryDirectory() + "afterlivie-preview.mp4"
-        appModel.preview(videoPath: video, commentsPath: comments, outputPath: output)
+        appModel.preview(videoPath: video, sources: document.project.commentSources, outputPath: output)
         document.project.renderHistory.append(RenderHistoryItem(outputPath: output, preset: "preview"))
     }
 
     private func renderExport() {
         guard let video = document.project.sourceVideoPath,
-              let comments = document.project.commentSourcePath else {
+              !document.project.commentSources.isEmpty else {
             document.project.diagnostics.append(DiagnosticItem(
                 severity: "error",
                 category: "project",
                 code: "ui.missing_inputs",
-                message: "Select a video and canonical JSON file before exporting."
+                message: "Select a video and at least one comment source before exporting."
             ))
             return
         }
         let output = NSHomeDirectory() + "/Desktop/AfterLivieExport.mp4"
-        appModel.export(videoPath: video, commentsPath: comments, outputPath: output)
+        appModel.export(videoPath: video, sources: document.project.commentSources, outputPath: output)
         document.project.renderHistory.append(RenderHistoryItem(outputPath: output, preset: "high_quality_upload"))
+    }
+
+    private func refreshMergedTimeline() {
+        Task {
+            if let report = await appModel.mergedTimeline(
+                sources: document.project.commentSources,
+                globalOffsetMs: document.project.globalOffsetMs
+            ) {
+                document.project.mergedTimelineRows = report.rows
+                document.project.mergedTimelineSources = report.sourceSummaries
+                document.project.diagnostics = report.diagnostics
+                for summary in report.sourceSummaries {
+                    if let index = document.project.commentSources.firstIndex(where: { $0.sourceId == summary.sourceId }) {
+                        document.project.commentSources[index].commentCount = summary.commentCount
+                        document.project.commentSources[index].skippedCount = Int(summary.skippedCount)
+                    }
+                }
+            }
+        }
     }
 }

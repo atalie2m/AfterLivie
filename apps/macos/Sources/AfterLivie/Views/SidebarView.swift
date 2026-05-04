@@ -16,6 +16,7 @@ struct SidebarView: View {
             Section("Project") {
                 LabeledContent("Layout", value: project.layoutTemplateId)
                 LabeledContent("Offset", value: "\(project.globalOffsetMs) ms")
+                LabeledContent("Sources", value: "\(project.commentSources.count)")
             }
         }
         .listStyle(.sidebar)

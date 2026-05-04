@@ -16,8 +16,14 @@ struct Cli {
 enum Command {
     Doctor,
     ImportPlan {
+        #[arg(
+            long,
+            conflicts_with = "source_manifest",
+            required_unless_present = "source_manifest"
+        )]
+        comments: Option<PathBuf>,
         #[arg(long)]
-        comments: PathBuf,
+        source_manifest: Option<PathBuf>,
         #[arg(long, default_value_t = 1280)]
         media_width: u32,
         #[arg(long, default_value_t = 720)]
@@ -28,6 +34,30 @@ enum Command {
         media_duration_ms: i64,
         #[arg(long)]
         out: PathBuf,
+    },
+    ImportPreview {
+        #[arg(long)]
+        source_spec: PathBuf,
+        #[arg(long, default_value_t = 100)]
+        max_rows: usize,
+        #[arg(long)]
+        out: Option<PathBuf>,
+    },
+    MergedTimeline {
+        #[arg(
+            long,
+            conflicts_with = "source_manifest",
+            required_unless_present = "source_manifest"
+        )]
+        comments: Option<PathBuf>,
+        #[arg(long)]
+        source_manifest: Option<PathBuf>,
+        #[arg(long, default_value_t = 0)]
+        global_offset_ms: i64,
+        #[arg(long, default_value_t = 100)]
+        limit: usize,
+        #[arg(long)]
+        out: Option<PathBuf>,
     },
     OverlayFrame {
         #[arg(long)]
@@ -44,8 +74,14 @@ enum Command {
     PreviewExport {
         #[arg(long)]
         video: PathBuf,
+        #[arg(
+            long,
+            conflicts_with = "source_manifest",
+            required_unless_present = "source_manifest"
+        )]
+        comments: Option<PathBuf>,
         #[arg(long)]
-        comments: PathBuf,
+        source_manifest: Option<PathBuf>,
         #[arg(long)]
         out: PathBuf,
         #[arg(long, default_value_t = 0)]
@@ -56,8 +92,14 @@ enum Command {
     FullExport {
         #[arg(long)]
         video: PathBuf,
+        #[arg(
+            long,
+            conflicts_with = "source_manifest",
+            required_unless_present = "source_manifest"
+        )]
+        comments: Option<PathBuf>,
         #[arg(long)]
-        comments: PathBuf,
+        source_manifest: Option<PathBuf>,
         #[arg(long)]
         out: PathBuf,
     },
@@ -79,18 +121,19 @@ fn main() -> anyhow::Result<()> {
         Command::Doctor => doctor(),
         Command::ImportPlan {
             comments,
+            source_manifest,
             media_width,
             media_height,
             fps,
             media_duration_ms: _,
             out,
         } => {
-            let result = replay_importers::import_canonical_json(&comments);
+            let result = load_import_batch(comments.as_deref(), source_manifest.as_deref())?;
             let plan = default_sidebar_plan(
                 media_width,
                 media_height,
                 fps,
-                vec![result.source.clone()],
+                result.sources.clone(),
                 result.comments.clone(),
             );
             write_json(
@@ -100,6 +143,26 @@ fn main() -> anyhow::Result<()> {
                     "renderPlan": plan,
                 }),
             )
+        }
+        Command::ImportPreview {
+            source_spec,
+            max_rows,
+            out,
+        } => {
+            let spec = read_source_spec(&source_spec)?;
+            let preview = replay_importers::preview_source(&spec, max_rows);
+            write_or_print_json(out.as_deref(), &preview)
+        }
+        Command::MergedTimeline {
+            comments,
+            source_manifest,
+            global_offset_ms,
+            limit,
+            out,
+        } => {
+            let batch = load_import_batch(comments.as_deref(), source_manifest.as_deref())?;
+            let report = replay_importers::merged_timeline_report(&batch, global_offset_ms, limit);
+            write_or_print_json(out.as_deref(), &report)
         }
         Command::OverlayFrame { plan, time_ms, out } => {
             let plan = read_plan(&plan)?;
@@ -116,11 +179,16 @@ fn main() -> anyhow::Result<()> {
         Command::PreviewExport {
             video,
             comments,
+            source_manifest,
             out,
             start_ms,
             duration_ms,
         } => {
-            let plan = plan_from_probe_and_comments(&video, &comments)?;
+            let plan = plan_from_probe_and_comments(
+                &video,
+                comments.as_deref(),
+                source_manifest.as_deref(),
+            )?;
             let request = replay_render::RenderRequest {
                 source_video_path: video.to_string_lossy().into_owned(),
                 output_path: out.to_string_lossy().into_owned(),
@@ -133,9 +201,14 @@ fn main() -> anyhow::Result<()> {
         Command::FullExport {
             video,
             comments,
+            source_manifest,
             out,
         } => {
-            let plan = plan_from_probe_and_comments(&video, &comments)?;
+            let plan = plan_from_probe_and_comments(
+                &video,
+                comments.as_deref(),
+                source_manifest.as_deref(),
+            )?;
             let request = replay_render::RenderRequest {
                 source_video_path: video.to_string_lossy().into_owned(),
                 output_path: out.to_string_lossy().into_owned(),
@@ -163,9 +236,10 @@ fn main() -> anyhow::Result<()> {
 
 fn plan_from_probe_and_comments(
     video: &Path,
-    comments: &Path,
+    comments: Option<&Path>,
+    source_manifest: Option<&Path>,
 ) -> anyhow::Result<replay_core::SemanticRenderPlan> {
-    let import_result = replay_importers::import_canonical_json(comments);
+    let import_result = load_import_batch(comments, source_manifest)?;
     let probe = replay_media::probe_media(video)?;
     let info = probe
         .info
@@ -174,9 +248,44 @@ fn plan_from_probe_and_comments(
         info.width.unwrap_or(1280),
         info.height.unwrap_or(720),
         info.fps.unwrap_or(30.0),
-        vec![import_result.source],
+        import_result.sources,
         import_result.comments,
     ))
+}
+
+fn load_import_batch(
+    comments: Option<&Path>,
+    source_manifest: Option<&Path>,
+) -> anyhow::Result<replay_importers::ImportBatchResult> {
+    if let Some(source_manifest) = source_manifest {
+        let manifest: replay_importers::SourceManifest =
+            serde_json::from_slice(&fs::read(source_manifest)?)?;
+        return Ok(replay_importers::import_sources(&manifest.sources));
+    }
+
+    let comments = comments.context("provide --comments or --source-manifest")?;
+    let result = replay_importers::import_canonical_json(comments);
+    Ok(replay_importers::ImportBatchResult {
+        sources: vec![result.source.clone()],
+        comments: result.comments.clone(),
+        diagnostics: result.diagnostics.clone(),
+        skipped_count: result.skipped_count,
+        source_results: vec![replay_importers::ImportSourceResultSummary {
+            source_id: result.source.source_id.clone(),
+            display_name: result.source.display_name.clone(),
+            importer_id: result.source.importer_id.clone(),
+            importer_version: result.importer_version.clone(),
+            detected_format: result.detected_format.clone(),
+            detected_encoding: result.detected_encoding.clone(),
+            comment_count: result.comments.len(),
+            skipped_count: result.skipped_count,
+            diagnostics: result.diagnostics,
+        }],
+    })
+}
+
+fn read_source_spec(path: &Path) -> anyhow::Result<replay_importers::ImportSourceSpec> {
+    serde_json::from_slice(&fs::read(path)?).with_context(|| format!("parse {}", path.display()))
 }
 
 fn read_plan(path: &Path) -> anyhow::Result<replay_core::SemanticRenderPlan> {
@@ -194,6 +303,14 @@ fn write_json(path: &Path, value: &impl serde::Serialize) -> anyhow::Result<()> 
     }
     fs::write(path, serde_json::to_vec_pretty(value)?)?;
     Ok(())
+}
+
+fn write_or_print_json(path: Option<&Path>, value: &impl serde::Serialize) -> anyhow::Result<()> {
+    if let Some(path) = path {
+        write_json(path, value)
+    } else {
+        print_json(value)
+    }
 }
 
 fn print_json(value: &impl serde::Serialize) -> anyhow::Result<()> {
@@ -281,5 +398,48 @@ fn check_binary(binary: &str, diagnostics: &mut Vec<Diagnostic>) {
             )
             .with_hint("Enter nix develop or install the missing tool."),
         );
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn clap_definition_is_valid() {
+        <Cli as clap::CommandFactory>::command().debug_assert();
+    }
+
+    #[test]
+    fn source_manifest_imports_and_reports_merged_timeline() {
+        let dir = tempfile::tempdir().unwrap();
+        let csv_path = dir.path().join("comments.csv");
+        fs::write(&csv_path, "timestamp,text,author,id\n1s,hello,Livie,c1\n").unwrap();
+        let manifest_path = dir.path().join("sources.json");
+        fs::write(
+            &manifest_path,
+            serde_json::to_vec_pretty(&serde_json::json!({
+                "sources": [
+                    {
+                        "path": csv_path.to_string_lossy(),
+                        "format": "csv",
+                        "sourceId": "csv_main",
+                        "displayName": "CSV Main",
+                        "platform": "youtube",
+                        "enabled": true,
+                        "offsetMs": 500
+                    }
+                ]
+            }))
+            .unwrap(),
+        )
+        .unwrap();
+
+        let batch = load_import_batch(None, Some(&manifest_path)).unwrap();
+        assert_eq!(batch.sources.len(), 1);
+        assert_eq!(batch.comments.len(), 1);
+        let report = replay_importers::merged_timeline_report(&batch, 0, 10);
+        assert_eq!(report.rows[0].effective_timestamp_ms, 1_500);
+        assert_eq!(report.source_summaries[0].comment_count, 1);
     }
 }

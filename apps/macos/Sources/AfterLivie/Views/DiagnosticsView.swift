@@ -1,38 +1,103 @@
 import SwiftUI
 
 struct DiagnosticsView: View {
+    @Binding var project: ReplayProjectSummary
     var diagnostics: [DiagnosticItem]
+    var refreshTimeline: () -> Void
 
     var body: some View {
-        if diagnostics.isEmpty {
-            ContentUnavailableView("No Diagnostics", systemImage: "checkmark.circle")
-        } else {
-            VStack(alignment: .leading, spacing: 12) {
-                ForEach(diagnostics) { diagnostic in
-                    VStack(alignment: .leading, spacing: 6) {
-                        HStack {
-                            Text(diagnostic.severity.uppercased())
-                                .font(.caption)
-                                .fontWeight(.semibold)
-                            Text(diagnostic.category)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            Spacer()
-                            Text(diagnostic.code)
-                                .font(.caption.monospaced())
-                                .foregroundStyle(.secondary)
-                        }
-                        Text(diagnostic.message)
-                        if let hint = diagnostic.actionableHint {
-                            Text(hint)
-                                .font(.callout)
-                                .foregroundStyle(.secondary)
+        VStack(alignment: .leading, spacing: 18) {
+            HStack {
+                Text("Merged Timeline")
+                    .font(.headline)
+                Spacer()
+                Button(action: refreshTimeline) {
+                    Label("Refresh", systemImage: "arrow.clockwise")
+                }
+                .disabled(project.commentSources.isEmpty)
+            }
+
+            if !project.mergedTimelineSources.isEmpty {
+                Grid(alignment: .leading, horizontalSpacing: 14, verticalSpacing: 6) {
+                    GridRow {
+                        Text("Source").font(.caption).foregroundStyle(.secondary)
+                        Text("Events").font(.caption).foregroundStyle(.secondary)
+                        Text("Skipped").font(.caption).foregroundStyle(.secondary)
+                        Text("Offset").font(.caption).foregroundStyle(.secondary)
+                        Text("State").font(.caption).foregroundStyle(.secondary)
+                    }
+                    ForEach(project.mergedTimelineSources) { source in
+                        GridRow {
+                            Text(source.displayName)
+                            Text("\(source.commentCount)")
+                            Text("\(source.skippedCount)")
+                            Text("\(source.offsetMs) ms")
+                            Text(source.enabled ? "Enabled" : "Disabled")
                         }
                     }
-                    .padding(12)
-                    .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
+                }
+            }
+
+            if !project.mergedTimelineRows.isEmpty {
+                Grid(alignment: .leading, horizontalSpacing: 14, verticalSpacing: 6) {
+                    GridRow {
+                        Text("Effective").font(.caption).foregroundStyle(.secondary)
+                        Text("Source").font(.caption).foregroundStyle(.secondary)
+                        Text("Author").font(.caption).foregroundStyle(.secondary)
+                        Text("Text").font(.caption).foregroundStyle(.secondary)
+                    }
+                    ForEach(Array(project.mergedTimelineRows.prefix(100))) { row in
+                        GridRow {
+                            Text("\(row.effectiveTimestampMs) ms")
+                                .font(.caption.monospacedDigit())
+                            Text(row.sourceId)
+                            Text(row.authorDisplayName ?? "-")
+                            Text(row.text).lineLimit(2)
+                        }
+                    }
+                }
+            }
+
+            Divider()
+
+            if diagnostics.isEmpty {
+                ContentUnavailableView("No Diagnostics", systemImage: "checkmark.circle")
+            } else {
+                VStack(alignment: .leading, spacing: 12) {
+                    ForEach(diagnostics) { diagnostic in
+                        DiagnosticCard(diagnostic: diagnostic)
+                    }
                 }
             }
         }
+    }
+}
+
+private struct DiagnosticCard: View {
+    var diagnostic: DiagnosticItem
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Text(diagnostic.severity.uppercased())
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                Text(diagnostic.category)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                Spacer()
+                Text(diagnostic.code)
+                    .font(.caption.monospaced())
+                    .foregroundStyle(.secondary)
+            }
+            Text(diagnostic.message)
+            if let hint = diagnostic.actionableHint {
+                Text(hint)
+                    .font(.callout)
+                    .foregroundStyle(.secondary)
+            }
+        }
+        .padding(12)
+        .background(Color.secondary.opacity(0.08), in: RoundedRectangle(cornerRadius: 8))
     }
 }

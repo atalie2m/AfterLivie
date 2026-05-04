@@ -33,3 +33,30 @@
 
 The committed media fixture directory intentionally excludes video files until
 small redistributable samples are selected.
+
+## v1.1 Import Expansion Smoke Commands
+
+Preview CSV mapping and normalized rows:
+
+```sh
+cargo run -p replay_cli -- import-preview \
+  --source-spec fixtures/comments/basic_csv_source.json
+```
+
+Generate a merged multi-source timeline:
+
+```sh
+cargo run -p replay_cli -- merged-timeline \
+  --source-manifest fixtures/comments/multi_source_manifest.json \
+  --limit 20
+```
+
+Generate a render plan from multiple comment sources:
+
+```sh
+cargo run -p replay_cli -- import-plan \
+  --source-manifest fixtures/comments/multi_source_manifest.json \
+  --media-width 1280 \
+  --media-height 720 \
+  --out /tmp/afterlivie-v1_1-plan.json
+```

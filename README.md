@@ -1,8 +1,8 @@
 # AfterLivie
 
 AfterLivie is a macOS-first native livestream archive replay composer. It turns
-one local video plus one prepared canonical JSON comment file into a synchronized
-replay export with a default sidebar comment layout.
+one local video plus prepared canonical JSON, CSV, or JSONL comment sources into
+a synchronized replay export with a default sidebar comment layout.
 
 ## Development
 
@@ -18,7 +18,7 @@ This checkout includes:
 
 - a Rust workspace for core/import/render/media/storage/bridge/CLI code,
 - a SwiftPM macOS document app under `apps/macos`,
-- canonical JSON fixtures under `fixtures/comments`,
+- canonical JSON, CSV, JSONL, and multi-source fixtures under `fixtures/comments`,
 - v1.0 quickstart and format docs under `docs/`.
 
 On machines without Nix, Rust, Cargo, ffmpeg, and ffprobe on `PATH`, only the

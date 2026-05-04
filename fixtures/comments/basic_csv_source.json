@@ -1,0 +1,9 @@
+{
+  "path": "fixtures/comments/basic.csv",
+  "format": "csv",
+  "sourceId": "csv_chat",
+  "displayName": "CSV Chat",
+  "platform": "youtube",
+  "enabled": true,
+  "offsetMs": 0
+}

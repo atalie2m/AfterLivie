@@ -12,7 +12,7 @@ struct ContentView: View {
                 DetailView(document: $document, selection: selection ?? .project)
                     .frame(minWidth: 620)
 
-                InspectorView(project: document.project)
+                InspectorView(project: $document.project)
                     .frame(minWidth: 280, idealWidth: 320, maxWidth: 380)
             }
         }

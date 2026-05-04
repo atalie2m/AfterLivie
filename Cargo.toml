@@ -21,6 +21,7 @@ repository = "https://github.com/atalie2m/AfterLivie"
 anyhow = "1.0"
 chrono = { version = "0.4", features = ["serde", "clock"] }
 clap = { version = "4.5", features = ["derive"] }
+csv = "1.3"
 fontdue = "0.9"
 hex = "0.4"
 png = "0.17"

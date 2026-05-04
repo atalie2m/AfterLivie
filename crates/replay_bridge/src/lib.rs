@@ -3,6 +3,7 @@ use replay_core::{
 };
 use serde::{Deserialize, Serialize};
 use std::ffi::{CStr, CString};
+use std::fs;
 use std::os::raw::c_char;
 use std::path::PathBuf;
 
@@ -25,7 +26,8 @@ struct VersionPayload {
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
 struct ImportPlanRequest {
-    comments_path: String,
+    comments_path: Option<String>,
+    source_manifest_path: Option<String>,
     #[serde(default = "default_media_width")]
     media_width: u32,
     #[serde(default = "default_media_height")]
@@ -37,7 +39,7 @@ struct ImportPlanRequest {
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
 struct ImportPlanPayload {
-    import_result: replay_core::ImportResult,
+    import_result: replay_importers::ImportBatchResult,
     render_plan: replay_core::SemanticRenderPlan,
 }
 
@@ -89,12 +91,21 @@ pub extern "C" fn replay_diagnostics_smoke_json() -> *mut c_char {
 #[no_mangle]
 pub extern "C" fn replay_import_plan_json(input_json: *const c_char) -> *mut c_char {
     with_input(input_json, |request: ImportPlanRequest| {
-        let import_result = replay_importers::import_canonical_json(&request.comments_path);
+        let import_result = match import_batch_from_request(&request) {
+            Ok(import_result) => import_result,
+            Err(diagnostics) => {
+                return BridgeResponse::<ImportPlanPayload> {
+                    ok: false,
+                    data: None,
+                    diagnostics,
+                };
+            }
+        };
         let plan = default_sidebar_plan(
             request.media_width,
             request.media_height,
             request.fps,
-            vec![import_result.source.clone()],
+            import_result.sources.clone(),
             import_result.comments.clone(),
         );
         BridgeResponse {
@@ -105,6 +116,65 @@ pub extern "C" fn replay_import_plan_json(input_json: *const c_char) -> *mut c_c
             }),
             diagnostics: import_result.diagnostics,
         }
+    })
+}
+
+fn import_batch_from_request(
+    request: &ImportPlanRequest,
+) -> Result<replay_importers::ImportBatchResult, Vec<Diagnostic>> {
+    if let Some(source_manifest_path) = &request.source_manifest_path {
+        let bytes = fs::read(source_manifest_path).map_err(|error| {
+            vec![Diagnostic::new(
+                DiagnosticSeverity::Fatal,
+                DiagnosticCategory::Import,
+                "import.manifest_read_failed",
+                format!("Could not read source manifest: {error}"),
+            )
+            .with_source_ref(SourceRef::File {
+                path: source_manifest_path.clone(),
+            })]
+        })?;
+        let manifest = serde_json::from_slice::<replay_importers::SourceManifest>(&bytes).map_err(
+            |error| {
+                vec![Diagnostic::new(
+                    DiagnosticSeverity::Fatal,
+                    DiagnosticCategory::Schema,
+                    "import.manifest_invalid_json",
+                    format!("Source manifest JSON is invalid: {error}"),
+                )
+                .with_source_ref(SourceRef::File {
+                    path: source_manifest_path.clone(),
+                })]
+            },
+        )?;
+        return Ok(replay_importers::import_sources(&manifest.sources));
+    }
+
+    let Some(comments_path) = &request.comments_path else {
+        return Err(vec![Diagnostic::new(
+            DiagnosticSeverity::Fatal,
+            DiagnosticCategory::Import,
+            "import.missing_source",
+            "Provide commentsPath or sourceManifestPath.",
+        )]);
+    };
+    let result = replay_importers::import_canonical_json(comments_path);
+    Ok(replay_importers::ImportBatchResult {
+        sources: vec![result.source.clone()],
+        comments: result.comments.clone(),
+        diagnostics: result.diagnostics.clone(),
+        skipped_count: result.skipped_count,
+        source_results: vec![replay_importers::ImportSourceResultSummary {
+            source_id: result.source.source_id.clone(),
+            display_name: result.source.display_name.clone(),
+            importer_id: result.source.importer_id.clone(),
+            importer_version: result.importer_version.clone(),
+            detected_format: result.detected_format.clone(),
+            detected_encoding: result.detected_encoding.clone(),
+            comment_count: result.comments.len(),
+            skipped_count: result.skipped_count,
+            diagnostics: result.diagnostics,
+        }],
     })
 }
 

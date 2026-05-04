@@ -101,10 +101,10 @@ mod tests {
     use super::*;
     use crate::{AssetRef, CommentBody, CommentKind, ImportFingerprint, TimestampBasis};
 
-    fn source(offset_ms: i64, enabled: bool) -> CommentSource {
+    fn source_with_id(source_id: &str, offset_ms: i64, enabled: bool) -> CommentSource {
         CommentSource {
-            source_id: "main".into(),
-            display_name: "Main".into(),
+            source_id: source_id.into(),
+            display_name: source_id.into(),
             platform: None,
             importer_id: "canonical-json".into(),
             original_file_ref: AssetRef {
@@ -124,10 +124,19 @@ mod tests {
         }
     }
 
-    fn comment(id: &str, timestamp_ms: i64, import_order: u64) -> CommentEvent {
+    fn source(offset_ms: i64, enabled: bool) -> CommentSource {
+        source_with_id("main", offset_ms, enabled)
+    }
+
+    fn comment_with_source(
+        source_id: &str,
+        id: &str,
+        timestamp_ms: i64,
+        import_order: u64,
+    ) -> CommentEvent {
         CommentEvent {
             id: id.into(),
-            source_id: "main".into(),
+            source_id: source_id.into(),
             platform: None,
             timestamp_ms,
             original_timestamp: None,
@@ -141,6 +150,10 @@ mod tests {
             raw_ref: None,
             import_order,
         }
+    }
+
+    fn comment(id: &str, timestamp_ms: i64, import_order: u64) -> CommentEvent {
+        comment_with_source("main", id, timestamp_ms, import_order)
     }
 
     #[test]
@@ -176,5 +189,43 @@ mod tests {
             },
         );
         assert!(visible.is_empty());
+    }
+
+    #[test]
+    fn source_priority_breaks_effective_timestamp_ties() {
+        let mut comments = vec![
+            comment_with_source("secondary", "b", 1_000, 0),
+            comment_with_source("primary", "a", 1_000, 0),
+        ];
+        let sources = vec![
+            source_with_id("primary", 0, true),
+            source_with_id("secondary", 0, true),
+        ];
+        sort_comments(&mut comments, &sources, 0);
+        assert_eq!(
+            comments
+                .iter()
+                .map(|comment| comment.id.as_str())
+                .collect::<Vec<_>>(),
+            ["a", "b"]
+        );
+    }
+
+    #[test]
+    fn source_offsets_are_non_destructive() {
+        let comments = vec![comment_with_source("late", "a", 1_000, 0)];
+        let sources = vec![source_with_id("late", 2_000, true)];
+        let visible = visible_comments(
+            &comments,
+            &sources,
+            VisibilityQuery {
+                time_ms: 3_000,
+                comment_window_ms: 500,
+                max_visible_comments: 10,
+                global_offset_ms: 0,
+            },
+        );
+        assert_eq!(comments[0].timestamp_ms, 1_000);
+        assert_eq!(visible[0].id, "a");
     }
 }

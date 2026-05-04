@@ -1,0 +1,31 @@
+{
+  "sources": [
+    {
+      "path": "fixtures/comments/basic_en.json",
+      "format": "canonical_json",
+      "sourceId": "main",
+      "displayName": "Main Chat",
+      "platform": "youtube",
+      "enabled": true,
+      "offsetMs": 0
+    },
+    {
+      "path": "fixtures/comments/basic.csv",
+      "format": "csv",
+      "sourceId": "csv_chat",
+      "displayName": "CSV Chat",
+      "platform": "youtube",
+      "enabled": true,
+      "offsetMs": 250
+    },
+    {
+      "path": "fixtures/comments/basic.jsonl",
+      "format": "jsonl",
+      "sourceId": "jsonl_chat",
+      "displayName": "JSONL Chat",
+      "platform": "twitch",
+      "enabled": true,
+      "offsetMs": -100
+    }
+  ]
+}

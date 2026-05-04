@@ -55,6 +55,7 @@ The path is:
 - `[x]` `nix run .#doctor`, `nix run .#format -- --ci`, `cargo fmt --all -- --check`, `cargo clippy --workspace --all-targets -- -D warnings`, and `cargo nextest run` pass under Nix. Nextest reports 24 passed tests, with one non-failing leaky-process note from the overlay test binary to investigate during hardening.
 - `[x]` The first render-plan fixture, semantic consistency report, and overlay PNG were generated from `fixtures/comments/basic_en.json`.
 - `[x]` A synthetic temporary H.264/AAC MP4 was generated, probed as Apple-native-compatible, and exported through the FFmpeg-assisted preview path to `/tmp/afterlivie-preview.mp4` at 1760x720 with AAC audio.
+- `[x]` v1.1 import/source expansion is implemented with CSV and JSONL importers, source manifests, import preview, source inspector controls, per-source enable/offset fields, merged timeline diagnostics, fixtures, and passing Rust/Swift gates.
 - `[!]` The Apple-native AVFoundation/VideoToolbox render path, production typography stack commitment, bundled/license-reviewed media strategy, golden baselines, sample media corpus, and release hardening gates remain open before v1.0 can be considered complete.
 
 ## Non-Negotiable Invariants
@@ -1629,72 +1630,72 @@ Goal: broaden input coverage without changing renderer fundamentals.
 
 Tasks:
 
-- [ ] Define CSV importer ID.
-- [ ] Define CSV importer version.
-- [ ] Add column mapping UI.
-- [ ] Support timestamp column mapping.
-- [ ] Support author column mapping.
-- [ ] Support text column mapping.
-- [ ] Support kind column mapping if present.
-- [ ] Support platform/source metadata mapping if present.
-- [ ] Add encoding detection policy.
-- [ ] Add invalid encoding diagnostics.
-- [ ] Add skipped row diagnostics.
-- [ ] Add duplicate ID behavior.
-- [ ] Add import preview table.
-- [ ] Add fixture tests.
+- [x] Define CSV importer ID.
+- [x] Define CSV importer version.
+- [x] Add column mapping UI.
+- [x] Support timestamp column mapping.
+- [x] Support author column mapping.
+- [x] Support text column mapping.
+- [x] Support kind column mapping if present.
+- [x] Support platform/source metadata mapping if present.
+- [x] Add encoding detection policy.
+- [x] Add invalid encoding diagnostics.
+- [x] Add skipped row diagnostics.
+- [x] Add duplicate ID behavior.
+- [x] Add import preview table.
+- [x] Add fixture tests.
 
 ### JSONL Importer
 
 Tasks:
 
-- [ ] Define JSONL importer ID.
-- [ ] Define JSONL importer version.
-- [ ] Implement streaming parser.
-- [ ] Handle partial line diagnostics.
-- [ ] Handle malformed row diagnostics.
-- [ ] Handle huge text field diagnostics.
-- [ ] Add large-file memory test.
-- [ ] Add row-level skip behavior.
-- [ ] Add fixture tests.
+- [x] Define JSONL importer ID.
+- [x] Define JSONL importer version.
+- [x] Implement streaming parser.
+- [x] Handle partial line diagnostics.
+- [x] Handle malformed row diagnostics.
+- [x] Handle huge text field diagnostics.
+- [x] Add large-file memory test.
+- [x] Add row-level skip behavior.
+- [x] Add fixture tests.
 
 ### Source Inspector
 
 Tasks:
 
-- [ ] Expose multiple comment sources in project inspector.
-- [ ] Show source display name.
-- [ ] Show platform label.
-- [ ] Show importer ID.
-- [ ] Show importer version.
-- [ ] Show original file reference.
-- [ ] Show enabled toggle.
-- [ ] Show offset field.
-- [ ] Show timestamp basis.
-- [ ] Show import diagnostics.
-- [ ] Show source metadata.
+- [x] Expose multiple comment sources in project inspector.
+- [x] Show source display name.
+- [x] Show platform label.
+- [x] Show importer ID.
+- [x] Show importer version.
+- [x] Show original file reference.
+- [x] Show enabled toggle.
+- [x] Show offset field.
+- [x] Show timestamp basis.
+- [x] Show import diagnostics.
+- [x] Show source metadata.
 
 ### Merged Timeline Diagnostics
 
 Tasks:
 
-- [ ] Show single merged timeline diagnostic view.
-- [ ] Show source-specific event counts.
-- [ ] Show skipped row counts.
-- [ ] Show offset-adjusted timestamp preview.
-- [ ] Show disabled source behavior.
-- [ ] Validate no renderer changes are required.
+- [x] Show single merged timeline diagnostic view.
+- [x] Show source-specific event counts.
+- [x] Show skipped row counts.
+- [x] Show offset-adjusted timestamp preview.
+- [x] Show disabled source behavior.
+- [x] Validate no renderer changes are required.
 
 ### v1.1 Release Gate
 
 Ship only if:
 
-- [ ] v1.0 single-source workflow remains stable.
-- [ ] CSV importer passes fixture suite.
-- [ ] JSONL importer passes fixture suite.
-- [ ] Importers do not require renderer changes.
-- [ ] Multiple source timelines remain non-destructive.
-- [ ] Diagnostics explain source-specific import issues.
+- [x] v1.0 single-source workflow remains stable.
+- [x] CSV importer passes fixture suite.
+- [x] JSONL importer passes fixture suite.
+- [x] Importers do not require renderer changes.
+- [x] Multiple source timelines remain non-destructive.
+- [x] Diagnostics explain source-specific import issues.
 
 ## v1.2 Detailed Plan: Multi-Source Sync and Merge
 
