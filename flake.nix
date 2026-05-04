@@ -94,7 +94,6 @@
               sccache
             ];
             shellHook = ''
-              ${config.pre-commit.installationScript}
               export AFTERLIVIE_FFMPEG="${pkgs.ffmpeg}/bin/ffmpeg"
               export AFTERLIVIE_FFPROBE="${pkgs.ffmpeg}/bin/ffprobe"
               echo "afterlivie-dev: $(rustc -vV | head -n1), $(cargo -V)"

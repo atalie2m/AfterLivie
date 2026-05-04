@@ -99,6 +99,8 @@ struct ImportView: View {
         document.project.commentSources.removeAll { $0.sourceId == sourceID }
         document.project.mergedTimelineRows = []
         document.project.mergedTimelineSources = []
+        document.project.alignmentSuggestions = []
+        document.project.orderingRules = []
     }
 
     private func refreshPreview(sourceID: String) {
@@ -122,6 +124,8 @@ struct ImportView: View {
             ) {
                 document.project.mergedTimelineRows = report.rows
                 document.project.mergedTimelineSources = report.sourceSummaries
+                document.project.alignmentSuggestions = report.alignmentSuggestions
+                document.project.orderingRules = report.orderingRules
                 document.project.diagnostics = report.diagnostics
                 for summary in report.sourceSummaries {
                     if let index = document.project.commentSources.firstIndex(where: { $0.sourceId == summary.sourceId }) {
@@ -202,6 +206,17 @@ private struct SourceImportSection: View {
                     Text("Display").foregroundStyle(.secondary)
                     TextField("Display Name", text: $source.displayName)
                         .textFieldStyle(.roundedBorder)
+                }
+                GridRow {
+                    Text("Platform").foregroundStyle(.secondary)
+                    TextField("Platform Label", text: Binding(
+                        get: { source.platform ?? "" },
+                        set: { value in
+                            let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+                            source.platform = trimmed.isEmpty ? nil : trimmed
+                        }
+                    ))
+                    .textFieldStyle(.roundedBorder)
                 }
             }
 

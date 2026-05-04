@@ -1,6 +1,7 @@
 use replay_core::{
-    visible_comments, Diagnostic, DiagnosticCategory, DiagnosticSeverity, SemanticRenderPlan,
-    SourceRef, VisibilityQuery,
+    visible_comments, CommentEvent, CommentPanelRegion, Diagnostic, DiagnosticCategory,
+    DiagnosticSeverity, SemanticRenderPlan, SourceRef, VisibilityQuery,
+    MERGED_MULTIPLATFORM_LAYOUT_ID, SPLIT_PLATFORM_REVIEW_LAYOUT_ID,
 };
 use serde::{Deserialize, Serialize};
 use std::fs::File;
@@ -56,70 +57,30 @@ pub fn render_overlay_rgba(
     let font = load_font();
     diagnostics.extend(font.diagnostics.clone());
 
-    let visible = visible_comments(
-        &plan.comments,
-        &plan.timeline.sources,
-        VisibilityQuery {
-            time_ms,
-            comment_window_ms: plan.timeline.comment_window.duration_ms,
-            max_visible_comments: plan.timeline.max_visible_comments,
-            global_offset_ms: plan.timeline.global_offset_ms,
-        },
-    );
-
-    let mut y = panel.y + plan.style.row_padding;
-    let max_text_width = panel.width.saturating_sub(plan.style.row_padding * 2);
-    for (index, comment) in visible.iter().enumerate() {
-        let author = comment
-            .author
-            .as_ref()
-            .map(|author| author.display_name.as_str())
-            .unwrap_or("Unknown");
-        let author_color = plan
-            .style
-            .author_colors
-            .get(index % plan.style.author_colors.len().max(1))
-            .and_then(|value| parse_color(value))
-            .unwrap_or([110, 231, 183, 255]);
-
-        let author_text = truncate_graphemes(author, 22);
-        let text = format!("{author_text}: {}", comment.body.text);
-        let wrapped = wrap_text(&text, max_text_width, plan.style.font_size);
-        let line_height = (plan.style.font_size * 1.35).ceil() as u32;
-        let row_height = (wrapped.len() as u32 * line_height) + plan.style.row_padding;
-        if y + row_height > panel.y + panel.height {
-            break;
-        }
-
-        fill_rect(
-            &mut pixmap,
-            panel.x,
-            y + row_height.saturating_sub(1),
-            panel.width,
-            1,
-            parse_color(&plan.style.row_separator).unwrap_or([45, 51, 58, 153]),
+    let visible_comment_count = if plan.layout_template_id == SPLIT_PLATFORM_REVIEW_LAYOUT_ID {
+        render_split_platform_layout(&mut pixmap, &font, plan, time_ms)
+    } else {
+        let visible = visible_comments(
+            &plan.comments,
+            &plan.timeline.sources,
+            VisibilityQuery {
+                time_ms,
+                comment_window_ms: plan.timeline.comment_window.duration_ms,
+                max_visible_comments: plan.timeline.max_visible_comments,
+                global_offset_ms: plan.timeline.global_offset_ms,
+            },
         );
-
-        let mut line_y = y + (plan.style.row_padding / 2) + line_height - 4;
-        for (line_index, line) in wrapped.iter().enumerate() {
-            let color = if line_index == 0 {
-                author_color
-            } else {
-                parse_color(&plan.style.text_primary).unwrap_or([245, 247, 250, 255])
-            };
-            draw_text(
-                &mut pixmap,
-                &font,
-                line,
-                panel.x + plan.style.row_padding,
-                line_y,
-                plan.style.font_size,
-                color,
-            );
-            line_y += line_height;
-        }
-        y += row_height;
-    }
+        render_comment_rows(
+            &mut pixmap,
+            &font,
+            plan,
+            panel,
+            &visible,
+            plan.layout_template_id == MERGED_MULTIPLATFORM_LAYOUT_ID,
+            None,
+        );
+        visible.len()
+    };
 
     if font.font.is_none() {
         diagnostics.push(
@@ -143,10 +104,228 @@ pub fn render_overlay_rgba(
             width: plan.canvas.width,
             height: plan.canvas.height,
             time_ms,
-            visible_comment_count: visible.len(),
+            visible_comment_count,
             diagnostics,
         },
     )
+}
+
+fn render_split_platform_layout(
+    pixmap: &mut Pixmap,
+    font: &RendererFont,
+    plan: &SemanticRenderPlan,
+    time_ms: i64,
+) -> usize {
+    let enabled_sources = plan
+        .timeline
+        .sources
+        .iter()
+        .filter(|source| source.enabled)
+        .collect::<Vec<_>>();
+    if enabled_sources.is_empty() {
+        return 0;
+    }
+
+    let panel = plan.regions.comments;
+    let lane_width = (panel.width / enabled_sources.len() as u32).max(1);
+    let mut total_visible = 0;
+
+    for (index, source) in enabled_sources.iter().enumerate() {
+        let lane_x = panel.x + (index as u32 * lane_width);
+        let lane_width = if index == enabled_sources.len() - 1 {
+            panel.width.saturating_sub(index as u32 * lane_width)
+        } else {
+            lane_width
+        };
+        let lane = CommentPanelRegion {
+            x: lane_x,
+            y: panel.y + 34,
+            width: lane_width,
+            height: panel.height.saturating_sub(34),
+        };
+        let source_color = source_color_for(plan, &source.source_id);
+        fill_rect(pixmap, lane_x, panel.y, lane_width, 34, [10, 12, 14, 230]);
+        fill_rect(pixmap, lane_x, panel.y, lane_width, 3, source_color);
+        if index > 0 {
+            fill_rect(
+                pixmap,
+                lane_x,
+                panel.y,
+                1,
+                panel.height,
+                parse_color(&plan.style.row_separator).unwrap_or([45, 51, 58, 153]),
+            );
+        }
+        let title = match source.platform.as_deref() {
+            Some(platform) if !platform.is_empty() => {
+                format!("{} · {}", source.display_name, platform)
+            }
+            _ => source.display_name.clone(),
+        };
+        draw_text(
+            pixmap,
+            font,
+            &truncate_graphemes(&title, 24),
+            lane_x + plan.style.row_padding,
+            panel.y + 23,
+            13.0,
+            parse_color(&plan.style.text_secondary).unwrap_or([155, 166, 178, 255]),
+        );
+
+        let lane_sources = vec![(*source).clone()];
+        let visible = visible_comments(
+            &plan.comments,
+            &lane_sources,
+            VisibilityQuery {
+                time_ms,
+                comment_window_ms: plan.timeline.comment_window.duration_ms,
+                max_visible_comments: plan.timeline.max_visible_comments,
+                global_offset_ms: plan.timeline.global_offset_ms,
+            },
+        );
+        total_visible += visible.len();
+        render_comment_rows(pixmap, font, plan, lane, &visible, true, Some(source_color));
+    }
+
+    total_visible
+}
+
+fn render_comment_rows(
+    pixmap: &mut Pixmap,
+    font: &RendererFont,
+    plan: &SemanticRenderPlan,
+    panel: CommentPanelRegion,
+    visible: &[CommentEvent],
+    show_badges: bool,
+    forced_source_color: Option<[u8; 4]>,
+) {
+    let mut y = panel.y + plan.style.row_padding;
+    let badge_width = if show_badges { 76 } else { 0 };
+    let max_text_width = panel
+        .width
+        .saturating_sub(plan.style.row_padding * 2)
+        .saturating_sub(badge_width);
+
+    for (index, comment) in visible.iter().enumerate() {
+        let author = comment
+            .author
+            .as_ref()
+            .map(|author| author.display_name.as_str())
+            .unwrap_or("Unknown");
+        let source_color =
+            forced_source_color.unwrap_or_else(|| source_color_for(plan, &comment.source_id));
+        let author_color = plan
+            .style
+            .author_colors
+            .get(index % plan.style.author_colors.len().max(1))
+            .and_then(|value| parse_color(value))
+            .unwrap_or([110, 231, 183, 255]);
+
+        let author_text = truncate_graphemes(author, 22);
+        let text = format!("{author_text}: {}", comment.body.text);
+        let wrapped = wrap_text(&text, max_text_width, plan.style.font_size);
+        let line_height = (plan.style.font_size * 1.35).ceil() as u32;
+        let row_height = (wrapped.len() as u32 * line_height) + plan.style.row_padding;
+        if y + row_height > panel.y + panel.height {
+            break;
+        }
+
+        fill_rect(
+            pixmap,
+            panel.x,
+            y,
+            4,
+            row_height.saturating_sub(1),
+            source_color,
+        );
+        fill_rect(
+            pixmap,
+            panel.x,
+            y + row_height.saturating_sub(1),
+            panel.width,
+            1,
+            parse_color(&plan.style.row_separator).unwrap_or([45, 51, 58, 153]),
+        );
+
+        let text_x = panel.x + plan.style.row_padding + badge_width;
+        let mut line_y = y + (plan.style.row_padding / 2) + line_height - 4;
+        if show_badges {
+            if let Some(label) = platform_label_for(plan, comment) {
+                draw_badge(
+                    pixmap,
+                    font,
+                    &label,
+                    panel.x + plan.style.row_padding,
+                    y + (plan.style.row_padding / 2),
+                    source_color,
+                );
+            }
+        }
+
+        for (line_index, line) in wrapped.iter().enumerate() {
+            let color = if line_index == 0 {
+                author_color
+            } else {
+                parse_color(&plan.style.text_primary).unwrap_or([245, 247, 250, 255])
+            };
+            draw_text(
+                pixmap,
+                font,
+                line,
+                text_x,
+                line_y,
+                plan.style.font_size,
+                color,
+            );
+            line_y += line_height;
+        }
+        y += row_height;
+    }
+}
+
+fn draw_badge(
+    pixmap: &mut Pixmap,
+    font: &RendererFont,
+    label: &str,
+    x: u32,
+    y: u32,
+    color: [u8; 4],
+) {
+    let text = truncate_graphemes(&label.to_ascii_uppercase(), 8);
+    fill_rect(pixmap, x, y, 64, 20, [color[0], color[1], color[2], 190]);
+    draw_text(
+        pixmap,
+        font,
+        &text,
+        x + 5,
+        y + 14,
+        10.0,
+        [255, 255, 255, 245],
+    );
+}
+
+fn source_color_for(plan: &SemanticRenderPlan, source_id: &str) -> [u8; 4] {
+    let index = plan
+        .timeline
+        .sources
+        .iter()
+        .position(|source| source.source_id == source_id)
+        .unwrap_or_default();
+    plan.style
+        .source_colors
+        .get(index % plan.style.source_colors.len().max(1))
+        .and_then(|value| parse_color(value))
+        .unwrap_or([20, 184, 166, 255])
+}
+
+fn platform_label_for(plan: &SemanticRenderPlan, comment: &CommentEvent) -> Option<String> {
+    comment.platform.clone().or_else(|| {
+        plan.timeline
+            .sources
+            .iter()
+            .find(|source| source.source_id == comment.source_id)
+            .and_then(|source| source.platform.clone())
+    })
 }
 
 fn load_font() -> RendererFont {
@@ -391,7 +570,12 @@ fn write_png(path: impl AsRef<Path>, width: u32, height: u32, rgba: &[u8]) -> an
 #[cfg(test)]
 mod tests {
     use super::*;
-    use replay_core::default_sidebar_plan;
+    use replay_core::{
+        default_sidebar_plan, render_plan_for_template, AssetRef, CommentAuthor, CommentBody,
+        CommentKind, CommentSource, ImportFingerprint, TimestampBasis,
+        MERGED_MULTIPLATFORM_LAYOUT_ID, SPLIT_PLATFORM_REVIEW_LAYOUT_ID,
+    };
+    use std::collections::BTreeMap;
 
     #[test]
     fn wraps_without_splitting_emoji_grapheme() {
@@ -407,5 +591,103 @@ mod tests {
         let report = render_overlay_png(&plan, 0, &output).unwrap();
         assert_eq!(report.width, 800);
         assert!(output.exists());
+    }
+
+    #[test]
+    fn renders_merged_multiplatform_badges_and_source_accents() {
+        let plan = render_plan_for_template(
+            MERGED_MULTIPLATFORM_LAYOUT_ID,
+            320,
+            180,
+            30.0,
+            vec![source("yt", "YouTube"), source("tw", "Twitch")],
+            vec![
+                comment("yt", "a", "youtube", 1_000),
+                comment("tw", "b", "twitch", 1_000),
+            ],
+        );
+        let (rgba, report) = render_overlay_rgba(&plan, 1_000);
+        assert_eq!(report.visible_comment_count, 2);
+        assert!(rgba_contains_color(&rgba, [20, 184, 166]));
+        assert!(rgba_contains_color(&rgba, [59, 130, 246]));
+    }
+
+    #[test]
+    fn renders_split_platform_review_layout() {
+        let plan = render_plan_for_template(
+            SPLIT_PLATFORM_REVIEW_LAYOUT_ID,
+            320,
+            180,
+            30.0,
+            vec![source("yt", "YouTube"), source("tw", "Twitch")],
+            vec![
+                comment("yt", "a", "youtube", 1_000),
+                comment("tw", "b", "twitch", 1_000),
+            ],
+        );
+        let dir = tempfile::tempdir().unwrap();
+        let output = dir.path().join("split.png");
+        let report = render_overlay_png(&plan, 1_000, &output).unwrap();
+        assert_eq!(report.width, 960);
+        assert_eq!(report.visible_comment_count, 2);
+        assert!(output.exists());
+    }
+
+    fn source(source_id: &str, platform: &str) -> CommentSource {
+        CommentSource {
+            source_id: source_id.into(),
+            display_name: platform.into(),
+            platform: Some(platform.into()),
+            importer_id: "test".into(),
+            original_file_ref: AssetRef {
+                path: format!("{source_id}.json"),
+                hash: None,
+            },
+            enabled: true,
+            offset_ms: 0,
+            timestamp_basis: TimestampBasis::RelativeToVideoStart,
+            diagnostics_ref: None,
+            visual_style: None,
+            metadata: BTreeMap::new(),
+            import_fingerprint: ImportFingerprint {
+                algorithm: "sha256".into(),
+                value: source_id.into(),
+            },
+        }
+    }
+
+    fn comment(
+        source_id: &str,
+        id: &str,
+        platform: &str,
+        timestamp_ms: i64,
+    ) -> replay_core::CommentEvent {
+        replay_core::CommentEvent {
+            id: id.into(),
+            source_id: source_id.into(),
+            platform: Some(platform.into()),
+            timestamp_ms,
+            original_timestamp: None,
+            kind: CommentKind::Message,
+            author: Some(CommentAuthor {
+                id: None,
+                display_name: "Livie".into(),
+                color: None,
+            }),
+            body: CommentBody {
+                text: format!("message {id}"),
+            },
+            style: None,
+            badges: vec![],
+            emotes: vec![],
+            source: None,
+            raw_ref: None,
+            import_order: 0,
+        }
+    }
+
+    fn rgba_contains_color(rgba: &[u8], rgb: [u8; 3]) -> bool {
+        rgba.chunks_exact(4)
+            .any(|pixel| pixel[0] == rgb[0] && pixel[1] == rgb[1] && pixel[2] == rgb[2])
     }
 }

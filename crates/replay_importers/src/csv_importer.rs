@@ -493,8 +493,9 @@ fn missing_mapping_diagnostic(source_path: &str, field: &str, column: &str) -> D
 fn defaults(
     spec: &ImportSourceSpec,
     fingerprint: Option<String>,
-    metadata: BTreeMap<String, String>,
+    mut metadata: BTreeMap<String, String>,
 ) -> SourceDefaults<'_> {
+    metadata.extend(spec.metadata.clone());
     SourceDefaults {
         source_id: &spec.source_id,
         display_name: spec.display_name.as_deref().unwrap_or(&spec.source_id),
@@ -504,7 +505,10 @@ fn defaults(
         source_path: &spec.path,
         importer_id: CSV_IMPORTER_ID,
         fingerprint,
-        timestamp_basis: TimestampBasis::RelativeToVideoStart,
+        timestamp_basis: spec
+            .timestamp_basis
+            .clone()
+            .unwrap_or(TimestampBasis::RelativeToVideoStart),
         metadata,
     }
 }
@@ -557,6 +561,8 @@ mod tests {
             enabled: true,
             offset_ms: 0,
             csv_mapping: mapping,
+            metadata: BTreeMap::new(),
+            timestamp_basis: None,
         }
     }
 

@@ -24,6 +24,7 @@ struct DiagnosticsView: View {
                         Text("Events").font(.caption).foregroundStyle(.secondary)
                         Text("Skipped").font(.caption).foregroundStyle(.secondary)
                         Text("Offset").font(.caption).foregroundStyle(.secondary)
+                        Text("Priority").font(.caption).foregroundStyle(.secondary)
                         Text("State").font(.caption).foregroundStyle(.secondary)
                     }
                     ForEach(project.mergedTimelineSources) { source in
@@ -32,7 +33,29 @@ struct DiagnosticsView: View {
                             Text("\(source.commentCount)")
                             Text("\(source.skippedCount)")
                             Text("\(source.offsetMs) ms")
+                            Text("\(source.priority)")
                             Text(source.enabled ? "Enabled" : "Disabled")
+                        }
+                    }
+                }
+            }
+
+            if !project.alignmentSuggestions.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Alignment Suggestions")
+                        .font(.subheadline)
+                        .fontWeight(.semibold)
+                    ForEach(project.alignmentSuggestions) { suggestion in
+                        HStack(alignment: .firstTextBaseline) {
+                            Text(suggestion.sourceId)
+                            Text("\(suggestion.suggestedOffsetMs) ms")
+                                .font(.caption.monospacedDigit())
+                            Text("\(Int(suggestion.confidence * 100))%")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                            Text(suggestion.basis)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                         }
                     }
                 }
@@ -42,7 +65,9 @@ struct DiagnosticsView: View {
                 Grid(alignment: .leading, horizontalSpacing: 14, verticalSpacing: 6) {
                     GridRow {
                         Text("Effective").font(.caption).foregroundStyle(.secondary)
+                        Text("Original").font(.caption).foregroundStyle(.secondary)
                         Text("Source").font(.caption).foregroundStyle(.secondary)
+                        Text("Platform").font(.caption).foregroundStyle(.secondary)
                         Text("Author").font(.caption).foregroundStyle(.secondary)
                         Text("Text").font(.caption).foregroundStyle(.secondary)
                     }
@@ -50,7 +75,10 @@ struct DiagnosticsView: View {
                         GridRow {
                             Text("\(row.effectiveTimestampMs) ms")
                                 .font(.caption.monospacedDigit())
-                            Text(row.sourceId)
+                            Text("\(row.originalTimestampMs) ms")
+                                .font(.caption.monospacedDigit())
+                            Text(row.sourceDisplayName)
+                            Text(row.platformLabel ?? row.platform ?? "-")
                             Text(row.authorDisplayName ?? "-")
                             Text(row.text).lineLimit(2)
                         }

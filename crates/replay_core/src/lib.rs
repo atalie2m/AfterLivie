@@ -23,9 +23,10 @@ pub use project::{
     ReproducibilityManifest, SourceVideoRef,
 };
 pub use render_plan::{
-    default_sidebar_plan, AudioPolicy, Canvas, CommentPanelRegion, CommentWindow, LayoutRegions,
-    OrderingRules, RenderExecutionProfile, RenderExecutionProfileKind, SemanticRenderPlan,
-    SourceVideoRegion, StyleTokens, TimelinePlan,
+    default_sidebar_plan, render_plan_for_template, AudioPolicy, Canvas, CommentPanelRegion,
+    CommentWindow, LayoutRegions, OrderingRules, RenderExecutionProfile,
+    RenderExecutionProfileKind, SemanticRenderPlan, SourceVideoRegion, StyleTokens, TimelinePlan,
+    CLASSIC_SIDEBAR_LAYOUT_ID, MERGED_MULTIPLATFORM_LAYOUT_ID, SPLIT_PLATFORM_REVIEW_LAYOUT_ID,
 };
 pub use timeline::{effective_timestamp_ms, sort_comments, visible_comments, VisibilityQuery};
 pub use timestamp::{parse_timestamp_ms, TimestampParseError};

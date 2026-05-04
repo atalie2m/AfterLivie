@@ -199,6 +199,7 @@
     ],
     "emojiPolicyId": "placeholder-diagnostic-v1",
     "fontPolicyId": "system-default-v1",
+    "layoutTemplateId": "classic-sidebar-v1",
     "mediaBackend": "ffmpeg_assisted",
     "ordering": {
       "tieBreakers": [
@@ -236,6 +237,14 @@
       "panelBackground": "#151719E6",
       "rowPadding": 12,
       "rowSeparator": "#2D333A99",
+      "sourceColors": [
+        "#14B8A6",
+        "#3B82F6",
+        "#F97316",
+        "#A855F7",
+        "#22C55E",
+        "#EF4444"
+      ],
       "textPrimary": "#F5F7FA",
       "textSecondary": "#9BA6B2"
     },

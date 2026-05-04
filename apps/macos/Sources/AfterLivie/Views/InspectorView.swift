@@ -13,6 +13,11 @@ struct InspectorView: View {
                 LabeledContent("Global Offset", value: "\(project.globalOffsetMs) ms")
                 LabeledContent("Diagnostics", value: "\(project.diagnostics.count)")
                 LabeledContent("Renders", value: "\(project.renderHistory.count)")
+                Picker("Layout", selection: $project.layoutTemplateId) {
+                    Text("Classic Sidebar").tag("classic-sidebar-v1")
+                    Text("Merged Multi-Platform").tag("merged-multiplatform-v1")
+                    Text("Split Platform Review").tag("split-platform-review-v1")
+                }
 
                 Divider()
 
@@ -51,6 +56,17 @@ private struct SourceInspectorSection: View {
             ))
 
             TextField("Offset (ms)", value: $source.offsetMs, format: .number)
+            TextField("Sync Start UTC", text: Binding(
+                get: { source.metadata["syncStartUtc"] ?? "" },
+                set: { value in
+                    let trimmed = value.trimmingCharacters(in: .whitespacesAndNewlines)
+                    if trimmed.isEmpty {
+                        source.metadata.removeValue(forKey: "syncStartUtc")
+                    } else {
+                        source.metadata["syncStartUtc"] = trimmed
+                    }
+                }
+            ))
 
             LabeledContent("Source ID", value: source.sourceId)
             LabeledContent("Format", value: source.format)

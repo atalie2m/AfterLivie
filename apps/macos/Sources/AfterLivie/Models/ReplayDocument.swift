@@ -62,6 +62,8 @@ struct ReplayProjectSummary: Codable, Equatable {
     var renderHistory: [RenderHistoryItem] = []
     var mergedTimelineRows: [MergedTimelineRowSummary] = []
     var mergedTimelineSources: [MergedTimelineSourceSummary] = []
+    var alignmentSuggestions: [AlignmentSuggestionSummary] = []
+    var orderingRules: [String] = []
 
     var primaryCommentSourcePath: String? {
         commentSources.first?.path
@@ -83,6 +85,8 @@ struct ReplayProjectSummary: Codable, Equatable {
         case renderHistory
         case mergedTimelineRows
         case mergedTimelineSources
+        case alignmentSuggestions
+        case orderingRules
     }
 
     init(from decoder: Decoder) throws {
@@ -103,6 +107,8 @@ struct ReplayProjectSummary: Codable, Equatable {
         renderHistory = try container.decodeIfPresent([RenderHistoryItem].self, forKey: .renderHistory) ?? []
         mergedTimelineRows = try container.decodeIfPresent([MergedTimelineRowSummary].self, forKey: .mergedTimelineRows) ?? []
         mergedTimelineSources = try container.decodeIfPresent([MergedTimelineSourceSummary].self, forKey: .mergedTimelineSources) ?? []
+        alignmentSuggestions = try container.decodeIfPresent([AlignmentSuggestionSummary].self, forKey: .alignmentSuggestions) ?? []
+        orderingRules = try container.decodeIfPresent([String].self, forKey: .orderingRules) ?? []
     }
 
     func encode(to encoder: Encoder) throws {
@@ -120,6 +126,8 @@ struct ReplayProjectSummary: Codable, Equatable {
         try container.encode(renderHistory, forKey: .renderHistory)
         try container.encode(mergedTimelineRows, forKey: .mergedTimelineRows)
         try container.encode(mergedTimelineSources, forKey: .mergedTimelineSources)
+        try container.encode(alignmentSuggestions, forKey: .alignmentSuggestions)
+        try container.encode(orderingRules, forKey: .orderingRules)
     }
 }
 
@@ -229,21 +237,110 @@ struct MergedTimelineReportSummary: Codable, Equatable {
     var sourceSummaries: [MergedTimelineSourceSummary]
     var rows: [MergedTimelineRowSummary]
     var diagnostics: [DiagnosticItem]
+    var alignmentSuggestions: [AlignmentSuggestionSummary] = []
+    var orderingRules: [String] = []
+
+    enum CodingKeys: String, CodingKey {
+        case sourceSummaries
+        case rows
+        case diagnostics
+        case alignmentSuggestions
+        case orderingRules
+    }
+
+    init(
+        sourceSummaries: [MergedTimelineSourceSummary],
+        rows: [MergedTimelineRowSummary],
+        diagnostics: [DiagnosticItem],
+        alignmentSuggestions: [AlignmentSuggestionSummary] = [],
+        orderingRules: [String] = []
+    ) {
+        self.sourceSummaries = sourceSummaries
+        self.rows = rows
+        self.diagnostics = diagnostics
+        self.alignmentSuggestions = alignmentSuggestions
+        self.orderingRules = orderingRules
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        sourceSummaries = try container.decodeIfPresent([MergedTimelineSourceSummary].self, forKey: .sourceSummaries) ?? []
+        rows = try container.decodeIfPresent([MergedTimelineRowSummary].self, forKey: .rows) ?? []
+        diagnostics = try container.decodeIfPresent([DiagnosticItem].self, forKey: .diagnostics) ?? []
+        alignmentSuggestions = try container.decodeIfPresent([AlignmentSuggestionSummary].self, forKey: .alignmentSuggestions) ?? []
+        orderingRules = try container.decodeIfPresent([String].self, forKey: .orderingRules) ?? []
+    }
 }
 
 struct MergedTimelineSourceSummary: Identifiable, Codable, Equatable {
     var id: String { sourceId }
     var sourceId: String
     var displayName: String
+    var platform: String?
     var enabled: Bool
     var offsetMs: Int
+    var priority: Int
     var commentCount: Int
     var skippedCount: UInt64
+    var firstEffectiveTimestampMs: Int?
+    var lastEffectiveTimestampMs: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case sourceId
+        case displayName
+        case platform
+        case enabled
+        case offsetMs
+        case priority
+        case commentCount
+        case skippedCount
+        case firstEffectiveTimestampMs
+        case lastEffectiveTimestampMs
+    }
+
+    init(
+        sourceId: String,
+        displayName: String,
+        platform: String? = nil,
+        enabled: Bool,
+        offsetMs: Int,
+        priority: Int = 0,
+        commentCount: Int,
+        skippedCount: UInt64,
+        firstEffectiveTimestampMs: Int? = nil,
+        lastEffectiveTimestampMs: Int? = nil
+    ) {
+        self.sourceId = sourceId
+        self.displayName = displayName
+        self.platform = platform
+        self.enabled = enabled
+        self.offsetMs = offsetMs
+        self.priority = priority
+        self.commentCount = commentCount
+        self.skippedCount = skippedCount
+        self.firstEffectiveTimestampMs = firstEffectiveTimestampMs
+        self.lastEffectiveTimestampMs = lastEffectiveTimestampMs
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        sourceId = try container.decode(String.self, forKey: .sourceId)
+        displayName = try container.decode(String.self, forKey: .displayName)
+        platform = try container.decodeIfPresent(String.self, forKey: .platform)
+        enabled = try container.decodeIfPresent(Bool.self, forKey: .enabled) ?? true
+        offsetMs = try container.decodeIfPresent(Int.self, forKey: .offsetMs) ?? 0
+        priority = try container.decodeIfPresent(Int.self, forKey: .priority) ?? 0
+        commentCount = try container.decodeIfPresent(Int.self, forKey: .commentCount) ?? 0
+        skippedCount = try container.decodeIfPresent(UInt64.self, forKey: .skippedCount) ?? 0
+        firstEffectiveTimestampMs = try container.decodeIfPresent(Int.self, forKey: .firstEffectiveTimestampMs)
+        lastEffectiveTimestampMs = try container.decodeIfPresent(Int.self, forKey: .lastEffectiveTimestampMs)
+    }
 }
 
 struct MergedTimelineRowSummary: Identifiable, Codable, Equatable {
     var id: String { "\(sourceId):\(commentId):\(effectiveTimestampMs)" }
     var sourceId: String
+    var sourceDisplayName: String
     var commentId: String
     var originalTimestampMs: Int
     var effectiveTimestampMs: Int
@@ -251,6 +348,73 @@ struct MergedTimelineRowSummary: Identifiable, Codable, Equatable {
     var text: String
     var kind: String
     var platform: String?
+    var platformLabel: String?
+    var sourcePriority: Int
+
+    enum CodingKeys: String, CodingKey {
+        case sourceId
+        case sourceDisplayName
+        case commentId
+        case originalTimestampMs
+        case effectiveTimestampMs
+        case authorDisplayName
+        case text
+        case kind
+        case platform
+        case platformLabel
+        case sourcePriority
+    }
+
+    init(
+        sourceId: String,
+        sourceDisplayName: String? = nil,
+        commentId: String,
+        originalTimestampMs: Int,
+        effectiveTimestampMs: Int,
+        authorDisplayName: String?,
+        text: String,
+        kind: String,
+        platform: String?,
+        platformLabel: String? = nil,
+        sourcePriority: Int = 0
+    ) {
+        self.sourceId = sourceId
+        self.sourceDisplayName = sourceDisplayName ?? sourceId
+        self.commentId = commentId
+        self.originalTimestampMs = originalTimestampMs
+        self.effectiveTimestampMs = effectiveTimestampMs
+        self.authorDisplayName = authorDisplayName
+        self.text = text
+        self.kind = kind
+        self.platform = platform
+        self.platformLabel = platformLabel
+        self.sourcePriority = sourcePriority
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        sourceId = try container.decode(String.self, forKey: .sourceId)
+        sourceDisplayName = try container.decodeIfPresent(String.self, forKey: .sourceDisplayName) ?? sourceId
+        commentId = try container.decode(String.self, forKey: .commentId)
+        originalTimestampMs = try container.decode(Int.self, forKey: .originalTimestampMs)
+        effectiveTimestampMs = try container.decode(Int.self, forKey: .effectiveTimestampMs)
+        authorDisplayName = try container.decodeIfPresent(String.self, forKey: .authorDisplayName)
+        text = try container.decode(String.self, forKey: .text)
+        kind = try container.decode(String.self, forKey: .kind)
+        platform = try container.decodeIfPresent(String.self, forKey: .platform)
+        platformLabel = try container.decodeIfPresent(String.self, forKey: .platformLabel)
+        sourcePriority = try container.decodeIfPresent(Int.self, forKey: .sourcePriority) ?? 0
+    }
+}
+
+struct AlignmentSuggestionSummary: Identifiable, Codable, Equatable {
+    var id: String { "\(sourceId):\(suggestedOffsetMs):\(basis)" }
+    var sourceId: String
+    var suggestedOffsetMs: Int
+    var confidence: Double
+    var basis: String
+    var reason: String
+    var requiresReview: Bool
 }
 
 struct DiagnosticItem: Identifiable, Codable, Equatable {

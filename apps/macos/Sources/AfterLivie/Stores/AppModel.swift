@@ -50,7 +50,12 @@ final class AppModel: ObservableObject {
         }
     }
 
-    func preview(videoPath: String, sources: [CommentSourceSummary], outputPath: String) {
+    func preview(
+        videoPath: String,
+        sources: [CommentSourceSummary],
+        outputPath: String,
+        layoutTemplateId: String
+    ) {
         Task {
             do {
                 let manifestPath = try writeSourceManifest(sources)
@@ -58,7 +63,8 @@ final class AppModel: ObservableObject {
                     "preview-export",
                     "--video", videoPath,
                     "--source-manifest", manifestPath,
-                    "--out", outputPath
+                    "--out", outputPath,
+                    "--layout-template-id", layoutTemplateId
                 ])
             } catch {
                 diagnostics = [uiDiagnostic(code: "ui.preview_failed", message: error.localizedDescription)]
@@ -66,7 +72,12 @@ final class AppModel: ObservableObject {
         }
     }
 
-    func export(videoPath: String, sources: [CommentSourceSummary], outputPath: String) {
+    func export(
+        videoPath: String,
+        sources: [CommentSourceSummary],
+        outputPath: String,
+        layoutTemplateId: String
+    ) {
         Task {
             do {
                 let manifestPath = try writeSourceManifest(sources)
@@ -74,7 +85,8 @@ final class AppModel: ObservableObject {
                     "full-export",
                     "--video", videoPath,
                     "--source-manifest", manifestPath,
-                    "--out", outputPath
+                    "--out", outputPath,
+                    "--layout-template-id", layoutTemplateId
                 ])
             } catch {
                 diagnostics = [uiDiagnostic(code: "ui.export_failed", message: error.localizedDescription)]

@@ -6,6 +6,7 @@ license.workspace = true
 repository.workspace = true
 
 [dependencies]
+chrono.workspace = true
 csv.workspace = true
 replay_core.workspace = true
 serde.workspace = true

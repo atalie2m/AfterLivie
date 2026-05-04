@@ -56,6 +56,7 @@ The path is:
 - `[x]` The first render-plan fixture, semantic consistency report, and overlay PNG were generated from `fixtures/comments/basic_en.json`.
 - `[x]` A synthetic temporary H.264/AAC MP4 was generated, probed as Apple-native-compatible, and exported through the FFmpeg-assisted preview path to `/tmp/afterlivie-preview.mp4` at 1760x720 with AAC audio.
 - `[x]` v1.1 import/source expansion is implemented with CSV and JSONL importers, source manifests, import preview, source inspector controls, per-source enable/offset fields, merged timeline diagnostics, fixtures, and passing Rust/Swift gates.
+- `[x]` v1.2 multi-source sync and merge UX is implemented with source-priority ordering, sync diagnostics, conservative UTC-metadata alignment suggestions, merged/split multi-platform render layouts, platform/source badges, macOS Sync Review UI, layout selection, source priority controls, offset nudge controls, anchor sync, fixtures, and passing Rust/Swift gates.
 - `[!]` The Apple-native AVFoundation/VideoToolbox render path, production typography stack commitment, bundled/license-reviewed media strategy, golden baselines, sample media corpus, and release hardening gates remain open before v1.0 can be considered complete.
 
 ## Non-Negotiable Invariants
@@ -1705,75 +1706,75 @@ Goal: make simulcast and multi-platform workflows usable.
 
 Tasks:
 
-- [ ] Allow adding multiple comment sources.
-- [ ] Allow removing a source without deleting original imported data until confirmed.
-- [ ] Allow enabling/disabling each source.
-- [ ] Allow editing display name.
-- [ ] Allow editing source platform label.
-- [ ] Allow editing per-source offset.
-- [ ] Show source diagnostics.
-- [ ] Show source event counts.
+- [x] Allow adding multiple comment sources.
+- [x] Allow removing a source without deleting original imported data until confirmed.
+- [x] Allow enabling/disabling each source.
+- [x] Allow editing display name.
+- [x] Allow editing source platform label.
+- [x] Allow editing per-source offset.
+- [x] Show source diagnostics.
+- [x] Show source event counts.
 
 ### Offset Review
 
 Tasks:
 
-- [ ] Add manual offset review UI.
-- [ ] Add offset nudge controls.
-- [ ] Add keyboard shortcuts for nudge controls.
-- [ ] Add side-by-side source preview.
-- [ ] Add anchor-based manual sync.
-- [ ] Show effective timestamp.
-- [ ] Show original timestamp.
-- [ ] Show global offset.
-- [ ] Show per-source offset.
-- [ ] Make offset mistakes visible.
+- [x] Add manual offset review UI.
+- [x] Add offset nudge controls.
+- [x] Add keyboard shortcuts for nudge controls.
+- [x] Add side-by-side source preview.
+- [x] Add anchor-based manual sync.
+- [x] Show effective timestamp.
+- [x] Show original timestamp.
+- [x] Show global offset.
+- [x] Show per-source offset.
+- [x] Make offset mistakes visible.
 
 ### Merge Model
 
 Tasks:
 
-- [ ] Define stable merge ordering.
-- [ ] Define source priority policy.
-- [ ] Define event priority policy.
-- [ ] Define tie-breaking policy.
-- [ ] Define disabled source behavior.
-- [ ] Define platform label rendering model.
-- [ ] Add merged ordering tests.
-- [ ] Add non-destructive offset tests.
-- [ ] Add source priority tests.
-- [ ] Add disabled source tests.
+- [x] Define stable merge ordering.
+- [x] Define source priority policy.
+- [x] Define event priority policy.
+- [x] Define tie-breaking policy.
+- [x] Define disabled source behavior.
+- [x] Define platform label rendering model.
+- [x] Add merged ordering tests.
+- [x] Add non-destructive offset tests.
+- [x] Add source priority tests.
+- [x] Add disabled source tests.
 
 ### Automatic Alignment
 
 Tasks:
 
-- [ ] Support timestamp-based alignment when reliable absolute timestamps exist.
-- [ ] Emit diagnostic when timestamp basis is ambiguous.
-- [ ] Do not add advanced automatic comment alignment unless reprioritized.
-- [ ] Show confidence and assumptions.
-- [ ] Require user review before applying automatic offset.
+- [x] Support timestamp-based alignment when reliable absolute timestamps exist.
+- [x] Emit diagnostic when timestamp basis is ambiguous.
+- [x] Do not add advanced automatic comment alignment unless reprioritized.
+- [x] Show confidence and assumptions.
+- [x] Require user review before applying automatic offset.
 
 ### Layouts
 
 Tasks:
 
-- [ ] Add merged multi-platform layout.
-- [ ] Add split-platform review layout.
-- [ ] Add platform badge rendering.
-- [ ] Add source color tokens.
-- [ ] Add golden tests for merged layout.
-- [ ] Add golden tests for split layout.
+- [x] Add merged multi-platform layout.
+- [x] Add split-platform review layout.
+- [x] Add platform badge rendering.
+- [x] Add source color tokens.
+- [x] Add golden tests for merged layout.
+- [x] Add golden tests for split layout.
 
 ### v1.2 Release Gate
 
 Ship only if:
 
-- [ ] Source offset changes are non-destructive.
-- [ ] Merged ordering is stable and documented.
-- [ ] Preview/export consistency holds for merged timelines.
-- [ ] UI makes offset mistakes visible.
-- [ ] Merge diagnostics explain source-specific conflicts.
+- [x] Source offset changes are non-destructive.
+- [x] Merged ordering is stable and documented.
+- [x] Preview/export consistency holds for merged timelines.
+- [x] UI makes offset mistakes visible.
+- [x] Merge diagnostics explain source-specific conflicts.
 
 ## v1.3 Detailed Plan: Layout and Styling
 

@@ -26,6 +26,8 @@ struct DetailView: View {
             ProjectSummaryView(project: document.project)
         case .importMedia:
             ImportView(document: $document)
+        case .sync:
+            SyncReviewView(document: $document)
         case .preview:
             RenderActionView(
                 title: "Preview Segment",
@@ -77,7 +79,12 @@ struct DetailView: View {
             return
         }
         let output = NSTemporaryDirectory() + "afterlivie-preview.mp4"
-        appModel.preview(videoPath: video, sources: document.project.commentSources, outputPath: output)
+        appModel.preview(
+            videoPath: video,
+            sources: document.project.commentSources,
+            outputPath: output,
+            layoutTemplateId: document.project.layoutTemplateId
+        )
         document.project.renderHistory.append(RenderHistoryItem(outputPath: output, preset: "preview"))
     }
 
@@ -93,7 +100,12 @@ struct DetailView: View {
             return
         }
         let output = NSHomeDirectory() + "/Desktop/AfterLivieExport.mp4"
-        appModel.export(videoPath: video, sources: document.project.commentSources, outputPath: output)
+        appModel.export(
+            videoPath: video,
+            sources: document.project.commentSources,
+            outputPath: output,
+            layoutTemplateId: document.project.layoutTemplateId
+        )
         document.project.renderHistory.append(RenderHistoryItem(outputPath: output, preset: "high_quality_upload"))
     }
 
@@ -105,6 +117,8 @@ struct DetailView: View {
             ) {
                 document.project.mergedTimelineRows = report.rows
                 document.project.mergedTimelineSources = report.sourceSummaries
+                document.project.alignmentSuggestions = report.alignmentSuggestions
+                document.project.orderingRules = report.orderingRules
                 document.project.diagnostics = report.diagnostics
                 for summary in report.sourceSummaries {
                     if let index = document.project.commentSources.firstIndex(where: { $0.sourceId == summary.sourceId }) {

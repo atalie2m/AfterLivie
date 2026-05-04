@@ -7,7 +7,10 @@
       "displayName": "Main Chat",
       "platform": "youtube",
       "enabled": true,
-      "offsetMs": 0
+      "offsetMs": 0,
+      "metadata": {
+        "syncStartUtc": "2026-05-04T12:00:00Z"
+      }
     },
     {
       "path": "fixtures/comments/basic.csv",
@@ -16,7 +19,10 @@
       "displayName": "CSV Chat",
       "platform": "youtube",
       "enabled": true,
-      "offsetMs": 250
+      "offsetMs": 250,
+      "metadata": {
+        "syncStartUtc": "2026-05-04T12:00:02Z"
+      }
     },
     {
       "path": "fixtures/comments/basic.jsonl",
@@ -25,7 +31,10 @@
       "displayName": "JSONL Chat",
       "platform": "twitch",
       "enabled": true,
-      "offsetMs": -100
+      "offsetMs": -100,
+      "metadata": {
+        "syncStartUtc": "2026-05-04T12:00:05Z"
+      }
     }
   ]
 }

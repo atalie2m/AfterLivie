@@ -1,10 +1,16 @@
 use crate::{CommentEvent, CommentSource, MediaBackend};
 use serde::{Deserialize, Serialize};
 
+pub const CLASSIC_SIDEBAR_LAYOUT_ID: &str = "classic-sidebar-v1";
+pub const MERGED_MULTIPLATFORM_LAYOUT_ID: &str = "merged-multiplatform-v1";
+pub const SPLIT_PLATFORM_REVIEW_LAYOUT_ID: &str = "split-platform-review-v1";
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SemanticRenderPlan {
     pub schema_version: String,
+    #[serde(default = "default_layout_template_id")]
+    pub layout_template_id: String,
     pub canvas: Canvas,
     pub regions: LayoutRegions,
     pub timeline: TimelinePlan,
@@ -80,6 +86,8 @@ pub struct StyleTokens {
     pub text_primary: String,
     pub text_secondary: String,
     pub author_colors: Vec<String>,
+    #[serde(default = "default_source_colors")]
+    pub source_colors: Vec<String>,
     pub font_size: f32,
     pub row_padding: u32,
 }
@@ -118,9 +126,43 @@ pub fn default_sidebar_plan(
     sources: Vec<CommentSource>,
     comments: Vec<CommentEvent>,
 ) -> SemanticRenderPlan {
-    let panel_width = 480;
+    render_plan_for_template(
+        CLASSIC_SIDEBAR_LAYOUT_ID,
+        source_width,
+        source_height,
+        fps,
+        sources,
+        comments,
+    )
+}
+
+pub fn render_plan_for_template(
+    layout_template_id: &str,
+    source_width: u32,
+    source_height: u32,
+    fps: f64,
+    sources: Vec<CommentSource>,
+    comments: Vec<CommentEvent>,
+) -> SemanticRenderPlan {
+    let normalized_layout = match layout_template_id {
+        MERGED_MULTIPLATFORM_LAYOUT_ID => MERGED_MULTIPLATFORM_LAYOUT_ID,
+        SPLIT_PLATFORM_REVIEW_LAYOUT_ID => SPLIT_PLATFORM_REVIEW_LAYOUT_ID,
+        _ => CLASSIC_SIDEBAR_LAYOUT_ID,
+    };
+    let panel_width = match normalized_layout {
+        MERGED_MULTIPLATFORM_LAYOUT_ID => 560,
+        SPLIT_PLATFORM_REVIEW_LAYOUT_ID => 640,
+        _ => 480,
+    };
+    let max_visible_comments = match normalized_layout {
+        MERGED_MULTIPLATFORM_LAYOUT_ID => 22,
+        SPLIT_PLATFORM_REVIEW_LAYOUT_ID => 30,
+        _ => 18,
+    };
+
     SemanticRenderPlan {
         schema_version: "1.0".into(),
+        layout_template_id: normalized_layout.into(),
         canvas: Canvas {
             width: source_width + panel_width,
             height: source_height,
@@ -146,7 +188,7 @@ pub fn default_sidebar_plan(
             },
             global_offset_ms: 0,
             sources,
-            max_visible_comments: 18,
+            max_visible_comments,
         },
         ordering: OrderingRules {
             tie_breakers: vec![
@@ -168,6 +210,7 @@ pub fn default_sidebar_plan(
                 "#FCA5A5".into(),
                 "#FCD34D".into(),
             ],
+            source_colors: default_source_colors(),
             font_size: 18.0,
             row_padding: 12,
         },
@@ -180,6 +223,21 @@ pub fn default_sidebar_plan(
     }
 }
 
+fn default_layout_template_id() -> String {
+    CLASSIC_SIDEBAR_LAYOUT_ID.into()
+}
+
+fn default_source_colors() -> Vec<String> {
+    vec![
+        "#14B8A6".into(),
+        "#3B82F6".into(),
+        "#F97316".into(),
+        "#A855F7".into(),
+        "#22C55E".into(),
+        "#EF4444".into(),
+    ]
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -187,6 +245,7 @@ mod tests {
     #[test]
     fn default_sidebar_uses_no_source_scaling() {
         let plan = default_sidebar_plan(1280, 720, 30.0, vec![], vec![]);
+        assert_eq!(plan.layout_template_id, CLASSIC_SIDEBAR_LAYOUT_ID);
         assert_eq!(plan.canvas.width, 1760);
         assert_eq!(plan.canvas.height, 720);
         assert_eq!(plan.regions.source_video.width, 1280);
@@ -199,5 +258,28 @@ mod tests {
         let json = serde_json::to_string_pretty(&plan).unwrap();
         assert!(json.contains("\"schemaVersion\": \"1.0\""));
         assert!(json.contains("\"overlayRendererId\""));
+    }
+
+    #[test]
+    fn v1_2_layout_templates_change_comment_panel_width() {
+        let merged = render_plan_for_template(
+            MERGED_MULTIPLATFORM_LAYOUT_ID,
+            1280,
+            720,
+            30.0,
+            vec![],
+            vec![],
+        );
+        let split = render_plan_for_template(
+            SPLIT_PLATFORM_REVIEW_LAYOUT_ID,
+            1280,
+            720,
+            30.0,
+            vec![],
+            vec![],
+        );
+        assert_eq!(merged.canvas.width, 1840);
+        assert_eq!(split.canvas.width, 1920);
+        assert_eq!(split.layout_template_id, SPLIT_PLATFORM_REVIEW_LAYOUT_ID);
     }
 }

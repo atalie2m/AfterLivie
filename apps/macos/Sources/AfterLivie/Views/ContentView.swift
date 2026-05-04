@@ -22,6 +22,7 @@ struct ContentView: View {
 enum SidebarSection: String, CaseIterable, Identifiable {
     case project
     case importMedia
+    case sync
     case preview
     case export
     case diagnostics
@@ -32,6 +33,7 @@ enum SidebarSection: String, CaseIterable, Identifiable {
         switch self {
         case .project: "Project"
         case .importMedia: "Import"
+        case .sync: "Sync"
         case .preview: "Preview"
         case .export: "Export"
         case .diagnostics: "Diagnostics"
@@ -42,6 +44,7 @@ enum SidebarSection: String, CaseIterable, Identifiable {
         switch self {
         case .project: "doc"
         case .importMedia: "square.and.arrow.down"
+        case .sync: "arrow.left.arrow.right"
         case .preview: "play.rectangle"
         case .export: "square.and.arrow.up"
         case .diagnostics: "exclamationmark.triangle"

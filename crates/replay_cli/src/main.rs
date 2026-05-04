@@ -1,6 +1,6 @@
 use anyhow::Context;
 use clap::{Parser, Subcommand};
-use replay_core::{default_sidebar_plan, Diagnostic, DiagnosticCategory, DiagnosticSeverity};
+use replay_core::{render_plan_for_template, Diagnostic, DiagnosticCategory, DiagnosticSeverity};
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -32,6 +32,8 @@ enum Command {
         fps: f64,
         #[arg(long, default_value_t = 0)]
         media_duration_ms: i64,
+        #[arg(long, default_value = replay_core::CLASSIC_SIDEBAR_LAYOUT_ID)]
+        layout_template_id: String,
         #[arg(long)]
         out: PathBuf,
     },
@@ -84,6 +86,8 @@ enum Command {
         source_manifest: Option<PathBuf>,
         #[arg(long)]
         out: PathBuf,
+        #[arg(long, default_value = replay_core::CLASSIC_SIDEBAR_LAYOUT_ID)]
+        layout_template_id: String,
         #[arg(long, default_value_t = 0)]
         start_ms: i64,
         #[arg(long, default_value_t = 30_000)]
@@ -102,6 +106,8 @@ enum Command {
         source_manifest: Option<PathBuf>,
         #[arg(long)]
         out: PathBuf,
+        #[arg(long, default_value = replay_core::CLASSIC_SIDEBAR_LAYOUT_ID)]
+        layout_template_id: String,
     },
     NewProject {
         #[arg(long)]
@@ -126,10 +132,12 @@ fn main() -> anyhow::Result<()> {
             media_height,
             fps,
             media_duration_ms: _,
+            layout_template_id,
             out,
         } => {
             let result = load_import_batch(comments.as_deref(), source_manifest.as_deref())?;
-            let plan = default_sidebar_plan(
+            let plan = render_plan_for_template(
+                &layout_template_id,
                 media_width,
                 media_height,
                 fps,
@@ -181,6 +189,7 @@ fn main() -> anyhow::Result<()> {
             comments,
             source_manifest,
             out,
+            layout_template_id,
             start_ms,
             duration_ms,
         } => {
@@ -188,6 +197,7 @@ fn main() -> anyhow::Result<()> {
                 &video,
                 comments.as_deref(),
                 source_manifest.as_deref(),
+                &layout_template_id,
             )?;
             let request = replay_render::RenderRequest {
                 source_video_path: video.to_string_lossy().into_owned(),
@@ -203,11 +213,13 @@ fn main() -> anyhow::Result<()> {
             comments,
             source_manifest,
             out,
+            layout_template_id,
         } => {
             let plan = plan_from_probe_and_comments(
                 &video,
                 comments.as_deref(),
                 source_manifest.as_deref(),
+                &layout_template_id,
             )?;
             let request = replay_render::RenderRequest {
                 source_video_path: video.to_string_lossy().into_owned(),
@@ -238,13 +250,15 @@ fn plan_from_probe_and_comments(
     video: &Path,
     comments: Option<&Path>,
     source_manifest: Option<&Path>,
+    layout_template_id: &str,
 ) -> anyhow::Result<replay_core::SemanticRenderPlan> {
     let import_result = load_import_batch(comments, source_manifest)?;
     let probe = replay_media::probe_media(video)?;
     let info = probe
         .info
         .context("media probe did not produce media info; inspect diagnostics")?;
-    Ok(default_sidebar_plan(
+    Ok(render_plan_for_template(
+        layout_template_id,
         info.width.unwrap_or(1280),
         info.height.unwrap_or(720),
         info.fps.unwrap_or(30.0),

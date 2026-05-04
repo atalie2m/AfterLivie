@@ -60,3 +60,46 @@ cargo run -p replay_cli -- import-plan \
   --media-height 720 \
   --out /tmp/afterlivie-v1_1-plan.json
 ```
+
+## v1.2 Multi-Source Sync Smoke Commands
+
+Review merged ordering, source priority, diagnostics, and metadata-based offset
+suggestions:
+
+```sh
+cargo run -p replay_cli -- merged-timeline \
+  --source-manifest fixtures/comments/multi_source_manifest.json \
+  --limit 20
+```
+
+Generate source-aware render plans:
+
+```sh
+cargo run -p replay_cli -- import-plan \
+  --source-manifest fixtures/comments/multi_source_manifest.json \
+  --layout-template-id merged-multiplatform-v1 \
+  --media-width 1280 \
+  --media-height 720 \
+  --out fixtures/render_plans/merged_multiplatform.json
+
+cargo run -p replay_cli -- import-plan \
+  --source-manifest fixtures/comments/multi_source_manifest.json \
+  --layout-template-id split-platform-review-v1 \
+  --media-width 1280 \
+  --media-height 720 \
+  --out fixtures/render_plans/split_platform_review.json
+```
+
+Render v1.2 overlay smoke frames:
+
+```sh
+cargo run -p replay_cli -- overlay-frame \
+  --plan fixtures/render_plans/merged_multiplatform.json \
+  --time-ms 10000 \
+  --out fixtures/golden_images/merged_multiplatform.png
+
+cargo run -p replay_cli -- overlay-frame \
+  --plan fixtures/render_plans/split_platform_review.json \
+  --time-ms 10000 \
+  --out fixtures/golden_images/split_platform_review.png
+```

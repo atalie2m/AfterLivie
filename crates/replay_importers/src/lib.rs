@@ -11,8 +11,8 @@ pub use canonical_json::{
 pub use csv_importer::{auto_csv_mapping, CSV_IMPORTER_ID, CSV_IMPORTER_VERSION};
 pub use jsonl_importer::{JSONL_IMPORTER_ID, JSONL_IMPORTER_VERSION};
 pub use source::{
-    import_source, import_sources, merged_timeline_report, preview_source, CsvColumnMapping,
-    ImportBatchResult, ImportFormat, ImportPreview, ImportPreviewRow, ImportSourceResultSummary,
-    ImportSourceSpec, MergedTimelineReport, MergedTimelineRow, MergedTimelineSourceSummary,
-    SourceManifest,
+    import_source, import_sources, merged_timeline_report, ordering_rules, preview_source,
+    AlignmentSuggestion, CsvColumnMapping, ImportBatchResult, ImportFormat, ImportPreview,
+    ImportPreviewRow, ImportSourceResultSummary, ImportSourceSpec, MergedTimelineReport,
+    MergedTimelineRow, MergedTimelineSourceSummary, SourceManifest,
 };

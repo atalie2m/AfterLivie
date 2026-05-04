@@ -95,31 +95,43 @@
         "timestampMs": 12500
       }
     ],
-    "detectedEncoding": "utf-8",
-    "detectedFormat": "canonical_json_v1",
     "diagnostics": [],
-    "importerVersion": "1.0.0",
     "skippedCount": 0,
-    "source": {
-      "diagnosticsRef": null,
-      "displayName": "Main Chat",
-      "enabled": true,
-      "importFingerprint": {
-        "algorithm": "sha256",
-        "value": "518aa3be48c7b222fa68f9496dea07978d574971f7a5b9c55a51a0ca6cd904cb"
-      },
-      "importerId": "canonical-json",
-      "metadata": {},
-      "offsetMs": 0,
-      "originalFileRef": {
-        "hash": "518aa3be48c7b222fa68f9496dea07978d574971f7a5b9c55a51a0ca6cd904cb",
-        "path": "fixtures/comments/basic_en.json"
-      },
-      "platform": "youtube",
-      "sourceId": "main",
-      "timestampBasis": "relative_to_video_start",
-      "visualStyle": null
-    }
+    "sourceResults": [
+      {
+        "commentCount": 3,
+        "detectedEncoding": "utf-8",
+        "detectedFormat": "canonical_json_v1",
+        "diagnostics": [],
+        "displayName": "Main Chat",
+        "importerId": "canonical-json",
+        "importerVersion": "1.0.0",
+        "skippedCount": 0,
+        "sourceId": "main"
+      }
+    ],
+    "sources": [
+      {
+        "diagnosticsRef": null,
+        "displayName": "Main Chat",
+        "enabled": true,
+        "importFingerprint": {
+          "algorithm": "sha256",
+          "value": "518aa3be48c7b222fa68f9496dea07978d574971f7a5b9c55a51a0ca6cd904cb"
+        },
+        "importerId": "canonical-json",
+        "metadata": {},
+        "offsetMs": 0,
+        "originalFileRef": {
+          "hash": "518aa3be48c7b222fa68f9496dea07978d574971f7a5b9c55a51a0ca6cd904cb",
+          "path": "fixtures/comments/basic_en.json"
+        },
+        "platform": "youtube",
+        "sourceId": "main",
+        "timestampBasis": "relative_to_video_start",
+        "visualStyle": null
+      }
+    ]
   },
   "renderPlan": {
     "audioPolicy": "attempt_passthrough_then_aac",
@@ -225,6 +237,7 @@
     ],
     "emojiPolicyId": "placeholder-diagnostic-v1",
     "fontPolicyId": "system-default-v1",
+    "layoutTemplateId": "classic-sidebar-v1",
     "mediaBackend": "ffmpeg_assisted",
     "ordering": {
       "tieBreakers": [
@@ -262,6 +275,14 @@
       "panelBackground": "#151719E6",
       "rowPadding": 12,
       "rowSeparator": "#2D333A99",
+      "sourceColors": [
+        "#14B8A6",
+        "#3B82F6",
+        "#F97316",
+        "#A855F7",
+        "#22C55E",
+        "#EF4444"
+      ],
       "textPrimary": "#F5F7FA",
       "textSecondary": "#9BA6B2"
     },

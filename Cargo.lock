@@ -690,6 +690,7 @@ dependencies = [
 name = "replay_importers"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "csv",
  "replay_core",
  "serde",
