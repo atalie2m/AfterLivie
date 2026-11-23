@@ -1,0 +1,21 @@
+{
+  "source": {
+    "sourceId": "main",
+    "displayName": "Emoji",
+    "platform": "twitch"
+  },
+  "comments": [
+    {
+      "id": "emoji1",
+      "timestampMs": 1000,
+      "author": { "displayName": "Nora" },
+      "body": { "text": "Nice work 👩‍💻✨" }
+    },
+    {
+      "id": "emoji2",
+      "timestampMs": 2000,
+      "author": { "displayName": "Sol" },
+      "body": { "text": "Skin tone sequence 👍🏽 should remain one grapheme." }
+    }
+  ]
+}

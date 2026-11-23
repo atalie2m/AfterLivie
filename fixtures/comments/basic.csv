@@ -1,0 +1,3 @@
+timestamp,text,author,id,platform
+1000,Hello from CSV,Livie,csv_1,youtube
+00:03,CSV rows use the same render semantics,Ada,csv_2,youtube

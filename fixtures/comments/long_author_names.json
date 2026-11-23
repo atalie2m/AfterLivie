@@ -1,0 +1,15 @@
+{
+  "source": {
+    "sourceId": "main",
+    "displayName": "Long Authors",
+    "platform": "youtube"
+  },
+  "comments": [
+    {
+      "id": "long1",
+      "timestampMs": 1000,
+      "author": { "displayName": "A_Very_Long_Display_Name_That_Needs_Truncation" },
+      "body": { "text": "Long author names should not resize the panel." }
+    }
+  ]
+}

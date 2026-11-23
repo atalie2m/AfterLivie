@@ -1,0 +1,27 @@
+{
+  "source": {
+    "sourceId": "main",
+    "displayName": "Main Chat",
+    "platform": "youtube"
+  },
+  "comments": [
+    {
+      "id": "c1",
+      "timestampMs": 1000,
+      "author": { "displayName": "Livie", "color": "#6EE7B7" },
+      "body": { "text": "Welcome back to the archive." }
+    },
+    {
+      "id": "c2",
+      "timestamp": "00:05",
+      "author": { "displayName": "Mika" },
+      "body": { "text": "The timing looks right." }
+    },
+    {
+      "id": "c3",
+      "timestamp": "00:12.5",
+      "author": { "displayName": "Ada" },
+      "body": { "text": "This should wrap inside the sidebar without changing the source video region." }
+    }
+  ]
+}

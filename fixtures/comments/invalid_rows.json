@@ -1,0 +1,14 @@
+{
+  "source": {
+    "sourceId": "main",
+    "displayName": "Invalid Rows",
+    "platform": "youtube"
+  },
+  "comments": [
+    { "id": "ok", "timestampMs": 1000, "body": "valid" },
+    { "id": "missingTimestamp", "body": "missing timestamp" },
+    { "id": "badTimestamp", "timestamp": "not-a-time", "body": "bad timestamp" },
+    { "id": "emptyBody", "timestampMs": 1500, "body": "" },
+    { "id": "ok", "timestampMs": 2000, "body": "duplicate id" }
+  ]
+}

@@ -1,0 +1,2 @@
+{"id":"jsonl_1","timestampMs":1500,"platform":"twitch","author":{"displayName":"Livie"},"body":{"text":"Hello from JSONL"}}
+{"id":"jsonl_2","timestamp":"00:04","platform":"twitch","author":{"displayName":"Ada"},"body":"JSONL streams one comment object per line"}
